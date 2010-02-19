@@ -12,6 +12,17 @@
 <!--
 $(function() {
 	$(".monthdatepicker").datepicker({ dateFormat: 'mm/yy' });
+
+	projectChange();
+	$("#project").change(projectChange);
+
+	/**
+	 * Hides all project description and then shows the one that is selected.
+	 */
+	function projectChange() {
+		$(".projectdescription").hide();
+		$("#projectdescription" + $("#project option:selected").attr("value")).show();
+	}
 });
 //-->
 </script>
@@ -32,6 +43,19 @@ $(function() {
 					<form:option value="" label="" />
 					<form:options items="${projects}" itemLabel="name" itemValue="id" />
 				</form:select>
+			</td>
+		</tr>
+		<tr>
+			<td class="label"><spring:message code="skillz.project.description" />:</td>
+			<td colspan="3">
+				<div class="projectdescription" id="projectdescription">
+					<em><spring:message code="skillz.project.nothingselected" /></em>
+				</div>
+				<core:forEach items="${projects}" var="project">
+					<div style="width: 600px" class="projectdescription" id="projectdescription${project.id}">
+						${project.description}
+					</div>
+				</core:forEach>
 			</td>
 		</tr>
 		<tr>
