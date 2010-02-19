@@ -49,6 +49,11 @@
 			<td><form:textarea path="platform" cssClass="textarea" cols="70" rows="8" /></td>
 			<td><form:errors path="platform" /></td>
 		</tr>
+		<tr>
+			<td class="label"><spring:message code="skillz.project.confidential" />:</td>
+			<td><form:checkbox path="confidential" /></td>
+			<td><form:errors path="confidential" /></td>
+		</tr>
 		<tfoot>
 			<tr>
 				<td>
@@ -56,7 +61,7 @@
 						<input type="hidden" name="owner" id="owner" value="${owner.id}" />
 					</core:if>
 					<input type="submit" value="<spring:message code="core.ui.ok" />" />
-					<a href="../../skillz"><spring:message code="core.ui.cancel" /></a>
+					<a href="../../skillz#tabs-3"><spring:message code="core.ui.cancel" /></a>
 				</td>
 			</tr>
 		</tfoot>

@@ -33,6 +33,8 @@ public class Project extends AbstractAuditable<User, Long> {
 
     private String industry;
 
+    private boolean confidential;
+
     @Lob
     private String platform;
 
@@ -165,6 +167,24 @@ public class Project extends AbstractAuditable<User, Long> {
     public void setPlatform(String platform) {
 
         this.platform = platform;
+    }
+
+
+    /**
+     * @return the confidential
+     */
+    public boolean isConfidential() {
+
+        return confidential;
+    }
+
+
+    /**
+     * @param confidential the confidential to set
+     */
+    public void setConfidential(boolean confidential) {
+
+        this.confidential = confidential;
     }
 
 
