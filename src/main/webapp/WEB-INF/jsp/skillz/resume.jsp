@@ -93,8 +93,9 @@
 		</tr>
 	</table>
 </core:if>
+<spring:url value="/web/skillz/resumes/${resume.id}/photo" var="action" />
 <form:form method="put" modelAttribute="resume" name="savePhoto"
-	action="resumes/${resume.id}/photo" enctype="multipart/form-data">
+	action="${action}" enctype="multipart/form-data" >
 	<table class="form" style="width: 100%">
 		<core:if test="${empty resume.photo}">
 			<tr>
@@ -107,7 +108,6 @@
 					<td><form:errors path="photo" /></td>
 				</tr>
 			</core:if>
-
 		</spring:hasBindErrors>
 		<tr>
 			<td><input type="file" name="photoBinary" /></td>

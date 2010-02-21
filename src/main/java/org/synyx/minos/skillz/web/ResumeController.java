@@ -57,6 +57,7 @@ import org.synyx.minos.skillz.service.SkillManagement;
  * Controller for web actions against {@link ResumeManagement}.
  * 
  * @author Oliver Gierke - gierke@synyx.de
+ * @author Markus Knittig - knittig@synyx.de
  */
 @Controller
 @SessionAttributes(types = { SkillMatrix.class, Resume.class })
@@ -75,9 +76,13 @@ public class ResumeController {
 
 
     /**
+     * Creates a new {@link ResumeController}.
+     * 
      * @param resumeManagement
      * @param skillManagement
      * @param resumeAdminstration
+     * @param pdfDocbookCreator
+     * @param resumeZipCreator
      */
     @Autowired
     public ResumeController(ResumeManagement resumeManagement,
@@ -91,6 +96,18 @@ public class ResumeController {
         this.resumeAdminstration = resumeAdminstration;
         this.pdfDocbookCreator = pdfDocbookCreator;
         this.resumeZipCreator = resumeZipCreator;
+    }
+
+
+    /**
+     * Configure a custom {@link MultipartFileValidator}. By default the
+     * controller will use a {@link MultipartFileValidator}.
+     * 
+     * @param multipartValidator the multipartValidator to set
+     */
+    public void setMultipartValidator(MultipartFileValidator multipartValidator) {
+
+        this.multipartValidator = multipartValidator;
     }
 
 
@@ -383,14 +400,4 @@ public class ResumeController {
 
         return "skillz/resume";
     }
-
-
-    /**
-     * @param multipartValidator the multipartValidator to set
-     */
-    public void setMultipartValidator(MultipartFileValidator multipartValidator) {
-
-        this.multipartValidator = multipartValidator;
-    }
-
 }
