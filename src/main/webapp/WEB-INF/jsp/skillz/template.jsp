@@ -26,7 +26,7 @@
 					<form:checkboxes items="${categories}" path="categories" element="li" />
 				</ul>
 			</td>
-			<td><form:errors path="name" /></td>
+			<td><form:errors path="categories" /></td>
 		</tr>
 		<tr>
 			<td colspan="3"><input type="submit" value="<spring:message code="core.ui.save" />" /></td>
