@@ -238,4 +238,13 @@ public interface SkillManagement {
      * @return
      */
     List<Responsibility> getResponsibilities();
+
+
+    /**
+     * Returns all {@link Skill}s.
+     * 
+     * @return
+     */
+    List<Skill> getSkills();
+
 }
