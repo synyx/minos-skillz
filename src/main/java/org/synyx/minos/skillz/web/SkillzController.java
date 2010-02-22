@@ -179,13 +179,12 @@ public class SkillzController {
     @RequestMapping(value = { "/skillz", "/skillz/" }, method = POST)
     public String saveSkill(@ModelAttribute Skill skill, Model model) {
 
-        Skill savedSkill = skillManagement.save(skill);
+        Category savedCategory = skillManagement.save(skill.getCategory());
 
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.skill.save.success", skill.getName()));
 
-        return UrlUtils.redirect("categories/"
-                + savedSkill.getCategory().getId());
+        return UrlUtils.redirect("categories/" + savedCategory.getId());
     }
 
 
