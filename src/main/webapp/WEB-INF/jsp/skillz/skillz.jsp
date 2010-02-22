@@ -26,7 +26,7 @@
 	</ul>
 	
 	<div class="tab" id="tabs-1">
-		<display:table id="category" name="categories" requestURI="" >
+		<display:table id="category" name="categories" requestURI="#tabs-1" >
 			<minos:column titleKey="name">
 				<a href="categories/${category.id}" title="${category.description}"><c:out value="${category.name}" /></a>
 			</minos:column>
@@ -52,7 +52,7 @@
 	</div>
 	
 	<div class="tab" id="tabs-2">
-		<display:table id="template" name="templates" requestURI="" >
+		<display:table id="template" name="templates" requestURI="#tabs-2" >
 			<minos:column titleKey="name">
 				<a href="templates/${template.id}"><c:out value="${template.name}" /></a>
 			</minos:column>
@@ -82,13 +82,13 @@
 	</div>
 	
 	<div class="tab" id="tabs-4">
-		<display:table id="level" name="levels" requestURI="">
+		<display:table id="level" name="levels" requestURI="#tabs-4">
 			<minos:column titleKey="name">
 				<a href="levels/${level.id}"><c:out value="${level.name}" /></a>
 			</minos:column>
 			<minos:column property="lastModifiedDate" class="date meta" />
 			<minos:column property="lastModifiedBy" class="meta" />
-			<minos:column class="actions" titleKey="skillz.level">
+			<minos:column class="actions" titleKey="skillz.level" sortable="false">
 				<c:if test="${level_rowNum > 1}">
 					<skillz:levelMoveLink href="levels/${level.id}/up" imageUrl="/images/skillz/arrow_up.png" altKey="skillz.level.up" />
 				</c:if>
