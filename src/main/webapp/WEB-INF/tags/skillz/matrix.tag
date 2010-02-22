@@ -181,9 +181,9 @@ $(function() {
 					</core:when>
 					<core:otherwise>
 						<td></td>
-						<td colspan="${fn:length(levels)}"><a
-							href="resume/matrix/form"><spring:message
-							code="skillz.skillMatrix.edit" /></a></td>
+						<td colspan="${fn:length(levels)}">
+							<a href="resume/matrix/form"><spring:message code="skillz.skillMatrix.edit" /></a>
+						</td>
 					</core:otherwise>
 				</core:choose>
 			</tr>

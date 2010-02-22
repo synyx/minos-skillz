@@ -8,7 +8,8 @@
 <%@ taglib prefix="c" tagdir="/WEB-INF/tags/core" %>
 
 <h2><spring:message code="skillz.category" /></h2>
-<form:form modelAttribute="category" action="../categories">
+<spring:url value="/web/skillz/categories" var="action" />
+<form:form modelAttribute="category" action="${action}">
 	<table class="form">
 		<tr>
 			<td class="label"><spring:message code="skillz.category.name" />:</td>
@@ -21,7 +22,10 @@
 			<td><form:errors path="description" /></td>
 		</tr>
 		<tr>
-			<td colspan="3"><input type="submit" value="<spring:message code="core.ui.save" />" /></td>
+			<td colspan="3">
+				<form:hidden path="id" />
+				<input type="submit" value="<spring:message code="core.ui.save" />" />
+			</td>
 		</tr>
 	</table>
 </form:form>
@@ -32,7 +36,8 @@
 	<table id="skills" class="form">
 		<core:forEach items="${category.skillz}" var="skill">
 			<tr>
-				<form:form action="../skill" method="post">
+				<spring:url value="/web/skillz/skill" var="skillaction" />
+				<form:form action="${skillaction}" method="post">
 					<td>
 						<input type="hidden" value="${skill.id}" name="skill" />
 						<input type="text" name="name" value="${skill.name}" />

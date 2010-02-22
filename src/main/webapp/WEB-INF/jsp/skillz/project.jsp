@@ -60,6 +60,7 @@
 					<core:if test="${not empty owner}">
 						<input type="hidden" name="owner" id="owner" value="${owner.id}" />
 					</core:if>
+					<form:hidden path="id" />
 					<input type="submit" value="<spring:message code="core.ui.ok" />" />
 					<a href="../../skillz#tabs-3"><spring:message code="core.ui.cancel" /></a>
 				</td>

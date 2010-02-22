@@ -78,6 +78,7 @@ $(function() {
 			</td>
 		</tr>
 	</table>
+	<form:hidden path="id" />
 	<input type="submit" value="<spring:message code="core.ui.save" />" />
 	<a href="../../resume#tabs-2"><spring:message code="core.ui.cancel" /></a>
 </minos:form>

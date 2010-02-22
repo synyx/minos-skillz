@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.synyx.minos.core.Core;
 import org.synyx.minos.core.domain.User;
@@ -42,10 +41,9 @@ import org.synyx.minos.umt.service.UserManagement;
  * 
  * @author Oliver Gierke - gierke@synyx.de
  * @author Michael Herbold - herbold@synyx.de
+ * @author Markus Knittig - knittig@synyx.de
  */
 @Controller
-@SessionAttributes(types = { Category.class, MatrixTemplate.class,
-        Project.class, Level.class })
 public class SkillzController {
 
     private final SkillManagement skillManagement;
@@ -251,7 +249,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.template.save.success", result.getName()));
 
-        return UrlUtils.redirect("../skillz");
+        return UrlUtils.redirect("../skillz#tabs-2");
     }
 
 
@@ -264,7 +262,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.template.delete.success", template.getName()));
 
-        return UrlUtils.redirect("../");
+        return UrlUtils.redirect("../#tabs-2");
     }
 
 
@@ -357,8 +355,8 @@ public class SkillzController {
             @ModelAttribute("project") Project project, Errors errors,
             SessionStatus conversation, Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, "../skillz", errors, conversation,
-                model, user);
+        return savePublicProject(project, "../skillz#tabs-3", errors,
+                conversation, model, user);
     }
 
 
@@ -377,8 +375,8 @@ public class SkillzController {
             @ModelAttribute("project") Project project, Errors errors,
             SessionStatus conversation, Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, "../../skillz", errors, conversation,
-                model, user);
+        return savePublicProject(project, "../../skillz#tabs-3", errors,
+                conversation, model, user);
     }
 
 
@@ -474,7 +472,7 @@ public class SkillzController {
             return UrlUtils.redirect("./" + user.getUsername());
         }
 
-        return UrlUtils.redirect("../");
+        return UrlUtils.redirect("../#tabs-3");
     }
 
 
@@ -509,7 +507,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.level.save.success", result.getName()));
 
-        return UrlUtils.redirect("../skillz");
+        return UrlUtils.redirect("../skillz#tabs-4");
     }
 
 
@@ -521,7 +519,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.level.delete.success", level.getName()));
 
-        return UrlUtils.redirect("../");
+        return UrlUtils.redirect("../#tabs-4");
     }
 
 

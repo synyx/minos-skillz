@@ -7,7 +7,8 @@
 <%@ taglib prefix="minos" uri="http://www.synyx.org/minos/tags" %>
 
 <h2><spring:message code="skillz.template" /></h2>
-<form:form modelAttribute="template" action="../templates">
+<spring:url value="/web/skillz/templates" var="action" />
+<form:form modelAttribute="template" action="${action}">
 	<table class="form">
 		<tr>
 			<td class="label"><spring:message code="skillz.template.name" />:</td>
@@ -29,7 +30,10 @@
 			<td><form:errors path="categories" /></td>
 		</tr>
 		<tr>
-			<td colspan="3"><input type="submit" value="<spring:message code="core.ui.save" />" /></td>
+			<td colspan="3">
+				<form:hidden path="id" />
+				<input type="submit" value="<spring:message code="core.ui.save" />" />
+			</td>
 		</tr>
 	</table>
 </form:form>
