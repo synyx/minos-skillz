@@ -30,7 +30,7 @@
 
 <div id="tabs-1" class="tab">
 
-<form:form modelAttribute="resume" action="resumes">
+<c:form modelAttribute="resume" action="/web/skillz/resumes" resourceAction="${resume.subject eq owner ? 'resume' : ''}">
 	<table class="form" style="float: left">
 		<tr>
 			<td class="label"><spring:message code="name" />:</td>
@@ -80,7 +80,7 @@
 			</tr>
 		</tfoot>
 	</table>
-</form:form>
+</c:form>
 <div id="photo" style="width: 300px; float: right">
 <core:if test="${not empty resume.photo}">
 	<table class="form" style="width: 100%">

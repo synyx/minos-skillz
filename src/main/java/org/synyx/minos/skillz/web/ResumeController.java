@@ -157,6 +157,7 @@ public class ResumeController {
     @RequestMapping(value = "/skillz/resume", method = GET)
     public String resume(Model model, @CurrentUser User user) {
 
+        model.addAttribute("owner", user);
         return showResume(resumeManagement.getResume(user), model);
     }
 
@@ -240,17 +241,57 @@ public class ResumeController {
     }
 
 
-    @RequestMapping(value = "/skillz/resumes", method = PUT)
-    public String saveResume(@ModelAttribute("resume") Resume resume,
+    /**
+     * Saves a resume instance (fetched from user data).
+     * 
+     * @param resume
+     * @param model
+     * @param conversation
+     * @return
+     */
+    @RequestMapping(value = "/skillz/resume", method = PUT)
+    public String saveUserResume(@ModelAttribute("resume") Resume resume,
             Model model, SessionStatus conversation) {
+
+        saveExistingResume(resume, model, conversation);
+
+        return UrlUtils.redirect("resume");
+    }
+
+
+    /**
+     * Saves a resume instance (fetched by id).
+     * 
+     * @param resume
+     * @param model
+     * @param conversation
+     * @return
+     */
+    @RequestMapping(value = "/skillz/resumes/{id}", method = PUT)
+    public String saveIdResume(@ModelAttribute("resume") Resume resume,
+            Model model, SessionStatus conversation) {
+
+        saveExistingResume(resume, model, conversation);
+
+        return UrlUtils.redirect("../resumes");
+    }
+
+
+    /**
+     * Generic resume save method.
+     * 
+     * @param resume
+     * @param model
+     * @param conversation
+     */
+    private void saveExistingResume(Resume resume, Model model,
+            SessionStatus conversation) {
 
         resumeManagement.save(resume);
 
         model.addAttribute(Core.MESSAGE, Message
                 .success("skillz.resume.save.success"));
         conversation.setComplete();
-
-        return UrlUtils.redirect("resume");
     }
 
 
