@@ -20,7 +20,6 @@ import org.synyx.minos.core.domain.User;
 import org.synyx.minos.util.Assert;
 
 
-
 /**
  * An activity abstracts work someone has done for a particular {@link Project}
  * ofer a given frame in time, as well as her responsibilities she took in that
@@ -185,7 +184,7 @@ public class Activity extends AbstractAuditable<User, Long> implements
      */
     public void setStart(DateMidnight start) {
 
-        this.start = start.toDate();
+        this.start = start == null ? null : start.toDate();
     }
 
 
@@ -241,7 +240,11 @@ public class Activity extends AbstractAuditable<User, Long> implements
      */
     public void setResponsibilities(List<Responsibility> responsibilities) {
 
-        this.responsibilities = responsibilities;
+        if (responsibilities == null) {
+            this.responsibilities = Collections.emptyList();
+        } else {
+            this.responsibilities = responsibilities;
+        }
     }
 
 

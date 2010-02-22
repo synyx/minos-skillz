@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.DataBinder;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ import org.synyx.minos.skillz.domain.Activity;
 import org.synyx.minos.skillz.domain.Project;
 import org.synyx.minos.skillz.service.ResumeManagement;
 import org.synyx.minos.skillz.service.SkillManagement;
+import org.synyx.minos.skillz.web.validation.ReferenceValidator;
 
 
 /**
@@ -40,6 +42,7 @@ public class ReferencesController {
 
     private final SkillManagement skillManagement;
     private final ResumeManagement resumeManagement;
+    private final ReferenceValidator referenceValidator;
 
 
     /**
@@ -48,10 +51,12 @@ public class ReferencesController {
      */
     @Autowired
     public ReferencesController(ResumeManagement resumeManagement,
-            SkillManagement skillManagement) {
+            SkillManagement skillManagement,
+            ReferenceValidator referenceValidator) {
 
         this.skillManagement = skillManagement;
         this.resumeManagement = resumeManagement;
+        this.referenceValidator = referenceValidator;
     }
 
 
@@ -80,28 +85,32 @@ public class ReferencesController {
 
     @RequestMapping(value = "/skillz/resume/references", method = POST)
     public String createActivity(
-            @ModelAttribute("reference") Activity reference, Model model,
-            SessionStatus session) {
+            @ModelAttribute("reference") Activity reference, Errors errors,
+            Model model, SessionStatus session, @CurrentUser User user) {
 
-        saveActivity(reference, model, session);
-
-        return UrlUtils.redirect("../resume#tabs-2");
+        return saveActivity(reference, errors, model, session,
+                "../resume#tabs-2", user);
     }
 
 
     @RequestMapping(value = "/skillz/resume/references/{id}", method = PUT)
     public String updateActivity(
-            @ModelAttribute("reference") Activity reference, Model model,
-            SessionStatus session) {
+            @ModelAttribute("reference") Activity reference, Errors errors,
+            Model model, SessionStatus session, @CurrentUser User user) {
 
-        saveActivity(reference, model, session);
-
-        return UrlUtils.redirect("../../resume#tabs-2");
+        return saveActivity(reference, errors, model, session,
+                "../../resume#tabs-2", user);
     }
 
 
-    private void saveActivity(Activity reference, Model model,
-            SessionStatus session) {
+    private String saveActivity(Activity reference, Errors errors, Model model,
+            SessionStatus session, String redirectUrl, User user) {
+
+        referenceValidator.validate(reference, errors);
+
+        if (errors.hasErrors()) {
+            return prepareActivtyForm(reference, model, user);
+        }
 
         Activity result = resumeManagement.save(reference);
         session.setComplete();
@@ -110,6 +119,8 @@ public class ReferencesController {
                 .addAttribute(Core.MESSAGE, Message.success(
                         "skillz.reference.save.success", result.getProject()
                                 .getName()));
+
+        return UrlUtils.redirect(redirectUrl);
     }
 
 
