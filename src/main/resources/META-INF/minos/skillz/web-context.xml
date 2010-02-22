@@ -15,5 +15,8 @@
 	
 	<!-- Validators -->
     <bean id="projectValidator" class="org.synyx.minos.skillz.web.validation.ProjectValidator" />
+    <bean class="org.synyx.minos.skillz.web.validation.CategoryValidator" />
+    <bean class="org.synyx.minos.skillz.web.validation.MatrixTemplateValidator" />
+    <bean class="org.synyx.minos.skillz.web.validation.LevelValidator" />
 
 </beans>

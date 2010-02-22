@@ -30,6 +30,9 @@ import org.synyx.minos.skillz.domain.MatrixTemplate;
 import org.synyx.minos.skillz.domain.Project;
 import org.synyx.minos.skillz.domain.Skill;
 import org.synyx.minos.skillz.service.SkillManagement;
+import org.synyx.minos.skillz.web.validation.CategoryValidator;
+import org.synyx.minos.skillz.web.validation.LevelValidator;
+import org.synyx.minos.skillz.web.validation.MatrixTemplateValidator;
 import org.synyx.minos.skillz.web.validation.ProjectValidator;
 import org.synyx.minos.umt.service.UserManagement;
 
@@ -48,6 +51,9 @@ public class SkillzController {
     private final SkillManagement skillManagement;
     private final UserManagement userManagement;
     private final ProjectValidator projectValidator;
+    private final CategoryValidator categoryValidator;
+    private final MatrixTemplateValidator matrixTemplateValidator;
+    private final LevelValidator levelValidator;
 
 
     /**
@@ -55,11 +61,17 @@ public class SkillzController {
      */
     @Autowired
     public SkillzController(SkillManagement skillManagement,
-            UserManagement userManagement, ProjectValidator projectValidator) {
+            UserManagement userManagement, ProjectValidator projectValidator,
+            CategoryValidator categoryValidator,
+            MatrixTemplateValidator matrixTemplateValidator,
+            LevelValidator levelValidator) {
 
         this.skillManagement = skillManagement;
         this.userManagement = userManagement;
         this.projectValidator = projectValidator;
+        this.categoryValidator = categoryValidator;
+        this.matrixTemplateValidator = matrixTemplateValidator;
+        this.levelValidator = levelValidator;
     }
 
 
@@ -107,7 +119,13 @@ public class SkillzController {
 
     @RequestMapping(value = "/skillz/categories", method = POST)
     public String saveCategory(@ModelAttribute("category") Category category,
-            Model model) {
+            Errors errors, Model model) {
+
+        categoryValidator.validate(category, errors);
+
+        if (errors.hasErrors()) {
+            return "skillz/category";
+        }
 
         skillManagement.save(category);
 
@@ -218,7 +236,15 @@ public class SkillzController {
      */
     @RequestMapping(value = "/skillz/templates", method = POST)
     public String saveTemplate(
-            @ModelAttribute("template") MatrixTemplate template, Model model) {
+            @ModelAttribute("template") MatrixTemplate template, Errors errors,
+            Model model) {
+
+        matrixTemplateValidator.validate(template, errors);
+
+        if (errors.hasErrors()) {
+            model.addAttribute("categories", skillManagement.getCategories());
+            return "skillz/template";
+        }
 
         MatrixTemplate result = skillManagement.save(template);
 
@@ -277,6 +303,7 @@ public class SkillzController {
         model.addAttribute("project", null == project ? BeanUtils
                 .instantiateClass(Project.class) : project);
         model.addAttribute("projects", skillManagement.getPublicProjects());
+        model.addAttribute("skills", skillManagement.getSkills());
 
         return "skillz/project";
     }
@@ -309,6 +336,7 @@ public class SkillzController {
 
         model.addAttribute("project", project);
         model.addAttribute("owner", user);
+        model.addAttribute("skills", skillManagement.getSkills());
 
         return "skillz/project";
     }
@@ -467,7 +495,14 @@ public class SkillzController {
 
 
     @RequestMapping(value = "/skillz/levels", method = POST)
-    public String saveLevel(@ModelAttribute("level") Level level, Model model) {
+    public String saveLevel(@ModelAttribute("level") Level level,
+            Errors errors, Model model) {
+
+        levelValidator.validate(level, errors);
+
+        if (errors.hasErrors()) {
+            return "skillz/level";
+        }
 
         Level result = skillManagement.save(level);
 
