@@ -1,6 +1,5 @@
 package org.synyx.minos.skillz.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -571,11 +570,7 @@ public class SkillManagementImpl implements SkillManagement {
     @Override
     public List<Skill> getSkills() {
 
-        List<Skill> skills = new ArrayList<Skill>();
-        for (Category category : getCategories()) {
-            skills.addAll(category.getSkillz());
-        }
-        return skills;
+        return skillzDao.readAll();
     }
 
 }
