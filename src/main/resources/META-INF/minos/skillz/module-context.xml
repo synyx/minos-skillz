@@ -37,6 +37,8 @@
 						<prop key="class.resource.loader.class">
 							org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
 						</prop>
+						<prop key="input.encoding">utf-8</prop>
+						<prop key="output.encoding">utf-8</prop>
 					</props>
 				</property>
 			</bean>
@@ -46,7 +48,12 @@
 
 	<bean id="pdfDocbookCreator" class="org.synyx.minos.skillz.service.PdfDocbookCreatorImpl">
 		<constructor-arg ref="docbookTemplateService" />
-		<constructor-arg value="classpath:/resume-template/maven/src/docbkx-stylesheet/fo/docbook.xsl" />
+		<constructor-arg>
+			<bean class="org.synyx.minos.skillz.service.FopXsltServiceImpl">
+				<constructor-arg value="classpath:/resume-template/maven/src/docbkx-stylesheet/fo/docbook.xsl" />
+				<property name="configuration" value="classpath:/fopconfig.xml" />
+			</bean>
+		</constructor-arg>
 	</bean>
 	
 	<bean id="zipDocbookCreator" class="org.synyx.minos.skillz.service.ZipDocbookCreatorImpl">

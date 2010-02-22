@@ -84,7 +84,12 @@ public class MatrixTemplate extends AbstractAuditable<User, Long> {
      */
     public MatrixTemplate setCategories(List<Category> categories) {
 
-        this.categories = categories;
+        if (categories == null) {
+            categories = new ArrayList<Category>();
+        } else {
+            this.categories = categories;
+        }
+
         return this;
     }
 

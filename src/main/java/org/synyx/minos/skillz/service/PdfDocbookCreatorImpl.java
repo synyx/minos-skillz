@@ -2,30 +2,23 @@ package org.synyx.minos.skillz.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.List;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.fop.apps.FOPException;
-import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.MimeConstants;
-import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.synyx.minos.core.domain.Image;
+import org.synyx.minos.skillz.domain.Level;
 import org.synyx.minos.skillz.domain.Resume;
-
-import com.icl.saxon.TransformerFactoryImpl;
 
 
 /**
@@ -37,19 +30,15 @@ import com.icl.saxon.TransformerFactoryImpl;
  */
 public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
 
-    private final TransformerFactory transformerFactory;
     private final DocbookTemplateService docbookTemplateService;
-    private final Resource defaultXsltResource;
+    private final FopXsltService fopService;
 
 
     public PdfDocbookCreatorImpl(DocbookTemplateService docbookTemplateService,
-            Resource defaultXsltResource) {
+            FopXsltService fopService) {
 
-        System.setProperty("javax.xml.transform.TransformerFactory",
-                "com.icl.saxon.TransformerFactoryImpl");
-        this.transformerFactory = TransformerFactory.newInstance();
         this.docbookTemplateService = docbookTemplateService;
-        this.defaultXsltResource = defaultXsltResource;
+        this.fopService = fopService;
     }
 
 
@@ -61,8 +50,8 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
      * String, java.io.File, java.io.OutputStream)
      */
     @Override
-    public void streamPdf(Resume resume, OutputStream outputStream)
-            throws DocbookCreationException {
+    public void streamPdf(Resume resume, List<Level> levels,
+            OutputStream outputStream) throws DocbookCreationException {
 
         File tmpPhotoFile = null;
         String tmpPhotoFileName = null;
@@ -72,7 +61,7 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
         }
 
         String docbookXml =
-                docbookTemplateService.createDocbookXml(resume,
+                docbookTemplateService.createDocbookXml(resume, levels,
                         tmpPhotoFileName);
         streamPdf(docbookXml, null, outputStream);
 
@@ -120,10 +109,9 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
         Assert.notNull(outputStream);
 
         try {
-            Fop fop = createFop(outputStream);
+            Fop fop = fopService.createFop(outputStream);
 
-            Transformer transformer = createTransformer(xsltFile);
-            transformer.setParameter("versionParam", "2.0");
+            Transformer transformer = fopService.createTransformer(xsltFile);
 
             Source source = new StreamSource(new StringReader(xmlString));
 
@@ -133,50 +121,6 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
         } catch (Exception e) {
             throw new DocbookCreationException(
                     "Failed to apply FOP XSLT transformation!", e);
-        }
-    }
-
-
-    /**
-     * Creates a {@link Fop} instance. Uses the Saxon
-     * {@link TransformerFactoryImpl}.
-     * 
-     * @param outputStream
-     * @return
-     * @throws FOPException
-     */
-    private Fop createFop(OutputStream outputStream) throws FOPException {
-
-        FopFactory fopFactory = FopFactory.newInstance();
-        FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
-        return fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent,
-                outputStream);
-    }
-
-
-    /**
-     * Creates a {@link Transformer} instance with the given XSLT file or a
-     * default XSLT file if <code>null</code> was given.
-     * 
-     * @param xsltFile
-     * @return
-     * @throws TransformerConfigurationException
-     * @throws IOException
-     */
-    private Transformer createTransformer(File xsltFile)
-            throws TransformerConfigurationException, IOException {
-
-        if (xsltFile == null) {
-            if (defaultXsltResource == null) {
-                throw new IllegalArgumentException(
-                        "Missing 'defaultXsltResource' property!");
-            } else {
-                return transformerFactory.newTransformer(new StreamSource(
-                        defaultXsltResource.getFile()));
-            }
-        } else {
-            return transformerFactory
-                    .newTransformer(new StreamSource(xsltFile));
         }
     }
 

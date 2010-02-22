@@ -18,5 +18,6 @@
     <bean class="org.synyx.minos.skillz.web.validation.CategoryValidator" />
     <bean class="org.synyx.minos.skillz.web.validation.MatrixTemplateValidator" />
     <bean class="org.synyx.minos.skillz.web.validation.LevelValidator" />
+    <bean class="org.synyx.minos.skillz.web.validation.ReferenceValidator" />
 
 </beans>

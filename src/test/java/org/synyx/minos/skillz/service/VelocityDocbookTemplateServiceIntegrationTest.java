@@ -2,15 +2,14 @@ package org.synyx.minos.skillz.service;
 
 import static org.junit.Assert.*;
 import static org.junit.matchers.JUnitMatchers.*;
-import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.joda.time.DateMidnight;
 import org.junit.Before;
 import org.junit.Test;
-import org.synyx.minos.core.domain.Image;
 import org.synyx.minos.core.domain.User;
 import org.synyx.minos.skillz.domain.Activity;
 import org.synyx.minos.skillz.domain.Category;
@@ -29,7 +28,6 @@ import org.synyx.minos.skillz.domain.Skill;
 public class VelocityDocbookTemplateServiceIntegrationTest {
 
     private DocbookTemplateService docbookTemplateService;
-
     private Resume resume;
 
 
@@ -39,10 +37,13 @@ public class VelocityDocbookTemplateServiceIntegrationTest {
         docbookTemplateService =
                 new VelocityDocbookTemplateServiceImpl(createVelocityEngine(),
                         "resume-template/resume.vm");
+        User user = new User("username", "foo@bar.de", "password");
+        user.setFirstname("\"foo\"");
+        user.setLastname("bar");
         resume =
-                new Resume(new User("username", "foo@bar.de", "password"),
-                        new MatrixTemplate("template"),
+                new Resume(user, new MatrixTemplate("template"),
                         new ArrayList<Activity>());
+        resume.setBirthday(new DateMidnight(1982, 1, 1));
     }
 
 
@@ -50,55 +51,46 @@ public class VelocityDocbookTemplateServiceIntegrationTest {
     public void createsDocbookXml() throws Exception {
 
         String docbookXml =
-                docbookTemplateService.createDocbookXml(resume, null);
+                docbookTemplateService.createDocbookXml(resume,
+                        new ArrayList<Level>(), null);
 
-        assertThat(docbookXml, containsString("<entry>foo@bar.de</entry>"));
+        assertThat(docbookXml, both(containsString("&quot;foo&quot; bar")).and(
+                containsString("1982")));
     }
 
 
     @Test
     public void createsDocbookXmlWithReference() throws Exception {
 
-        resume
-                .add(new Activity(new Project("projectname"),
-                        new DateMidnight()));
+        resume.add(new Activity(new Project("projectname"), new DateMidnight(
+                2010, 2, 12)));
 
         String docbookXml =
-                docbookTemplateService.createDocbookXml(resume, null);
+                docbookTemplateService.createDocbookXml(resume,
+                        new ArrayList<Level>(), null);
 
-        assertThat(docbookXml, containsString("<entry>projectname</entry>"));
+        assertThat(docbookXml, both(containsString("projectname")).and(
+                containsString("[Februar 2010 - heute]")));
     }
 
 
     @Test
     public void createsDocbookXmlWithSkill() throws Exception {
 
-        resume.getSkillz().add(
-                new Skill("skillname", new Category("categoryname")),
-                new Level("levelname", 0));
+        Category category = new Category("categoryname");
+        List<Level> levels = new ArrayList<Level>();
+        levels.add(new Level("level0", 0));
+        levels.add(new Level("level1", 1));
+        resume.getSkillz().add(new Skill("skill1", category), levels.get(0));
+        resume.getSkillz().add(new Skill("skill2", category), levels.get(1));
 
         String docbookXml =
-                docbookTemplateService.createDocbookXml(resume, null);
+                docbookTemplateService.createDocbookXml(resume, levels, null);
 
-        assertThat(docbookXml, both(
-                containsString("<entry>categoryname</entry>")).and(
-                containsString("<listitem>skillname (levelname)</listitem>")));
-    }
-
-
-    @Test
-    public void createsDocbookXmlWithPhoto() throws Exception {
-
-        Image image = mock(Image.class);
-        when(image.getFormatName()).thenReturn("png");
-        resume.setPhoto(image);
-
-        String docbookXml =
-                docbookTemplateService.createDocbookXml(resume, "foobar.png");
-
-        assertThat(
-                docbookXml,
-                containsString("<inlinegraphic fileref=\"foobar.png\" format=\"png\" />"));
+        assertThat(docbookXml, both(containsString("categoryname")).and(
+                containsString("skill2")));
+        assertThat(docbookXml, both(containsString("level1")).and(
+                containsString("X")));
     }
 
 
@@ -110,6 +102,8 @@ public class VelocityDocbookTemplateServiceIntegrationTest {
                 .setProperty("class.resource.loader.class",
                         "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         velocityEngine.setProperty("class.resource.loader.cache", "false");
+        velocityEngine.setProperty("input.encoding", "utf-8");
+        velocityEngine.setProperty("output.encoding", "utf-8");
         return velocityEngine;
     }
 

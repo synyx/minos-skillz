@@ -180,7 +180,8 @@ public class ResumeController {
                 "attachment; filename=resume.pdf");
 
         pdfDocbookCreator.streamPdf(resumeManagement.getFilteredResume(user,
-                getResumeAttributeFilters(webRequest)), outputStream);
+                getResumeAttributeFilters(webRequest)), skillManagement
+                .getLevels(), outputStream);
     }
 
 
@@ -202,7 +203,8 @@ public class ResumeController {
                 "attachment; filename=resume.zip");
 
         resumeZipCreator.streamZip(resumeManagement.getFilteredResume(user,
-                getResumeAttributeFilters(webRequest)), outputStream);
+                getResumeAttributeFilters(webRequest)), skillManagement
+                .getLevels(), outputStream);
     }
 
 

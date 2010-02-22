@@ -1,10 +1,15 @@
 package org.synyx.minos.skillz.service;
 
 import java.io.StringWriter;
+import java.util.List;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.generic.ConversionTool;
+import org.apache.velocity.tools.generic.DateTool;
+import org.apache.velocity.tools.generic.EscapeTool;
+import org.synyx.minos.skillz.domain.Level;
 import org.synyx.minos.skillz.domain.Resume;
 
 
@@ -36,11 +41,15 @@ public class VelocityDocbookTemplateServiceImpl implements
      * (org.synyx.minos.skillz.domain.Resume)
      */
     @Override
-    public String createDocbookXml(Resume resume, String photoFilename)
-            throws DocbookCreationException {
+    public String createDocbookXml(Resume resume, List<Level> levels,
+            String photoFilename) throws DocbookCreationException {
 
         VelocityContext context = new VelocityContext();
+        context.put("esc", new EscapeTool());
+        context.put("convert", new ConversionTool());
+        context.put("date", new DateTool());
         context.put("resume", resume);
+        context.put("levels", levels);
         if (resume.getPhoto() != null) {
             context.put("photoFile", photoFilename);
         }

@@ -2,7 +2,9 @@ package org.synyx.minos.skillz.service;
 
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
+import java.util.List;
 
+import org.synyx.minos.skillz.domain.Level;
 import org.synyx.minos.skillz.domain.Resume;
 
 
@@ -29,8 +31,8 @@ public class ZipDocbookCreatorImpl implements ResumeZipCreator {
      * org.synyx.minos.skillz.domain.Resume, java.io.OutputStream)
      */
     @Override
-    public void streamZip(Resume resume, OutputStream outputStream)
-            throws ZipCreationException {
+    public void streamZip(Resume resume, List<Level> levels,
+            OutputStream outputStream) throws ZipCreationException {
 
         Zipper zipper =
                 new Zipper(new BufferedOutputStream(outputStream), "/resume");
@@ -44,12 +46,11 @@ public class ZipDocbookCreatorImpl implements ResumeZipCreator {
             }
 
             zipper.writeEntry(docbookTemplateService.createDocbookXml(resume,
-                    "media/photo.png"), "src/docbkx/resume.xml");
+                    levels, "media/photo.png"), "src/docbkx/resume.xml");
         } catch (Exception e) {
             throw new ZipCreationException("Failed to create Resume ZIP!", e);
         } finally {
             zipper.close();
         }
     }
-
 }

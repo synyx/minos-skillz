@@ -2,7 +2,9 @@ package org.synyx.minos.skillz.service;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.List;
 
+import org.synyx.minos.skillz.domain.Level;
 import org.synyx.minos.skillz.domain.Resume;
 
 
@@ -30,10 +32,11 @@ public interface PdfDocbookCreator {
      * Creates a PDF {@link OutputStream} from a {@link Resume}.
      * 
      * @param resume
+     * @param levels
      * @param outputStream
      * @throws DocbookCreationException
      */
-    void streamPdf(Resume resume, OutputStream outputStream)
+    void streamPdf(Resume resume, List<Level> levels, OutputStream outputStream)
             throws DocbookCreationException;
 
 }

@@ -4,6 +4,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
@@ -25,6 +26,7 @@ public abstract class AbstractDocbookCreatorIntegrationTest {
     protected Resume resume;
 
 
+    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
 
         User user = new User("username", "test@test.com", "password");
@@ -40,7 +42,7 @@ public abstract class AbstractDocbookCreatorIntegrationTest {
         docbookTemplateService = mock(DocbookTemplateService.class);
         when(
                 docbookTemplateService.createDocbookXml((Resume) anyObject(),
-                        anyString())).thenReturn(
+                        (List<Level>) anyObject(), anyString())).thenReturn(
                 IOUtils.toString(new ClassPathResource("/docbookexample.xml")
                         .getInputStream()));
     }
