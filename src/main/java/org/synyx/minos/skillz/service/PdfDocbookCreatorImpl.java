@@ -121,20 +121,4 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
         }
     }
 
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.synyx.minos.skillz.service.PdfDocbookCreator#createTempPdfFile(org
-     * .synyx.minos.skillz.domain.Resume, java.util.List)
-     */
-    @Override
-    public File createTempPdfFile(Resume resume, List<Level> levels)
-            throws DocbookCreationException {
-
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
