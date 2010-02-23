@@ -7,6 +7,11 @@ import org.synyx.minos.skillz.domain.Level;
 
 
 /**
+ * Validator for {@code Level}. Checks the following criteria:
+ * <ul>
+ * <li>Level name is not empty</li>
+ * </ul>
+ * 
  * @author Markus Knittig - knittig@synyx.de
  */
 public class LevelValidator implements Validator {

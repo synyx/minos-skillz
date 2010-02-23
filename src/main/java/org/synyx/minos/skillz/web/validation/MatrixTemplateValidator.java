@@ -7,6 +7,11 @@ import org.synyx.minos.skillz.domain.MatrixTemplate;
 
 
 /**
+ * Validator for {@code MatrixTemplate}. Checks the following criteria:
+ * <ul>
+ * <li>Matrix template name is not empty</li>
+ * </ul>
+ * 
  * @author Markus Knittig - knittig@synyx.de
  */
 public class MatrixTemplateValidator implements Validator {

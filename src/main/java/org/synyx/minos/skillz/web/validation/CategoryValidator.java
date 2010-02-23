@@ -7,6 +7,11 @@ import org.synyx.minos.skillz.domain.Category;
 
 
 /**
+ * Validator for {@code Category}. Checks the following criteria:
+ * <ul>
+ * <li>Category name is not empty</li>
+ * </ul>
+ * 
  * @author Markus Knittig - knittig@synyx.de
  */
 public class CategoryValidator implements Validator {
