@@ -179,7 +179,7 @@ public class ResumeController {
             WebRequest webRequest, OutputStream outputStream) {
 
         response.setContentType("application/pdf");
-        response.setHeader("content-disposition",
+        response.setHeader("Content-disposition",
                 "attachment; filename=resume.pdf");
 
         pdfDocbookCreator.streamPdf(resumeManagement.getFilteredResume(user,
