@@ -9,7 +9,6 @@ import java.util.List;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -22,9 +21,7 @@ import org.synyx.minos.skillz.domain.Resume;
 
 
 /**
- * Implementation of {@link PdfDocbookCreator}. Uses Saxon's implementation of
- * {@link TransformerFactory}, as the default JDK {@link TransformerFactory}
- * doesn't work.
+ * Implementation of {@link PdfDocbookCreator}.
  * 
  * @author Markus Knittig - knittig@synyx.de
  */
@@ -122,6 +119,22 @@ public class PdfDocbookCreatorImpl implements PdfDocbookCreator {
             throw new DocbookCreationException(
                     "Failed to apply FOP XSLT transformation!", e);
         }
+    }
+
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.synyx.minos.skillz.service.PdfDocbookCreator#createTempPdfFile(org
+     * .synyx.minos.skillz.domain.Resume, java.util.List)
+     */
+    @Override
+    public File createTempPdfFile(Resume resume, List<Level> levels)
+            throws DocbookCreationException {
+
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
