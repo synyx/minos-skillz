@@ -46,6 +46,11 @@ import org.synyx.minos.umt.service.UserManagement;
 @Controller
 public class SkillzController {
 
+    private static final String SKILLZ_CATEGORIES = "/skillz#tabs-1";
+    private static final String SKILLZ_TEMPLATES = "/skillz#tabs-2";
+    private static final String SKILLZ_PROJECTS = "/skillz#tabs-3";
+    private static final String SKILLZ_LEVELS = "/skillz#tabs-4";
+
     private final SkillManagement skillManagement;
     private final UserManagement userManagement;
     private final ProjectValidator projectValidator;
@@ -116,8 +121,24 @@ public class SkillzController {
 
 
     @RequestMapping(value = "/skillz/categories", method = POST)
-    public String saveCategory(@ModelAttribute("category") Category category,
-            Errors errors, Model model) {
+    public String saveNewCategory(
+            @ModelAttribute("category") Category category, Errors errors,
+            Model model) {
+
+        return saveCategory(category, errors, model);
+    }
+
+
+    @RequestMapping(value = "/skillz/categories/{id}", method = PUT)
+    public String saveExistingCategory(
+            @ModelAttribute("category") Category category, Errors errors,
+            Model model) {
+
+        return saveCategory(category, errors, model);
+    }
+
+
+    private String saveCategory(Category category, Errors errors, Model model) {
 
         categoryValidator.validate(category, errors);
 
@@ -130,7 +151,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.category.save.success", category.getName()));
 
-        return UrlUtils.redirect("../skillz");
+        return UrlUtils.redirect(SKILLZ_CATEGORIES);
     }
 
 
@@ -141,13 +162,13 @@ public class SkillzController {
         if (null == category) {
             model.addAttribute(Core.MESSAGE, Message
                     .error("skillz.category.delete.error"));
-            return UrlUtils.redirect("../../");
+            return null;
         }
 
         skillManagement.delete(category);
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.category.delete.success", category.getName()));
-        return UrlUtils.redirect("../");
+        return UrlUtils.redirect(SKILLZ_CATEGORIES);
     }
 
 
@@ -161,9 +182,9 @@ public class SkillzController {
      * @param model
      * @return
      */
-    @RequestMapping(value = "/skillz/skill", method = POST)
-    public String moveSkill(@RequestParam Skill skill,
-            @RequestParam Category category, Model model) {
+    @RequestMapping(value = "/skillz/skill", method = POST, params = "moveSkill")
+    public String moveSkill(@RequestParam("skill") Skill skill,
+            @RequestParam("category") Category category, Model model) {
 
         Category currentCategory = skill.getCategory();
 
@@ -172,11 +193,12 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.skill.save.success", skill.getName()));
 
-        return UrlUtils.redirect("categories/" + currentCategory.getId());
+        return UrlUtils.redirect("/skillz/categories/"
+                + currentCategory.getId());
     }
 
 
-    @RequestMapping(value = { "/skillz", "/skillz/" }, method = POST)
+    @RequestMapping(value = "/skillz/skill", method = POST, params = "addSkill")
     public String saveSkill(@ModelAttribute Skill skill, Model model) {
 
         Category savedCategory = skillManagement.save(skill.getCategory());
@@ -184,7 +206,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.skill.save.success", skill.getName()));
 
-        return UrlUtils.redirect("categories/" + savedCategory.getId());
+        return UrlUtils.redirect("/skillz/categories/" + savedCategory.getId());
     }
 
 
@@ -196,8 +218,8 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.skill.delete.success", skill.getName()));
 
-        return UrlUtils
-                .redirect("../categories/" + skill.getCategory().getId());
+        return UrlUtils.redirect("/skillz/categories/"
+                + skill.getCategory().getId());
     }
 
 
@@ -207,7 +229,6 @@ public class SkillzController {
      * Shows the form for a {@link MatrixTemplate}.
      * 
      * @param template
-     * @param id
      * @param model
      * @return
      */
@@ -225,15 +246,48 @@ public class SkillzController {
 
 
     /**
-     * Saves a {@link MatrixTemplate}.
+     * Saves a new {@link MatrixTemplate}.
      * 
      * @param template
+     * @param errors
      * @param model
      * @return
      */
     @RequestMapping(value = "/skillz/templates", method = POST)
-    public String saveTemplate(
+    public String saveNewTemplate(
             @ModelAttribute("template") MatrixTemplate template, Errors errors,
+            Model model) {
+
+        return saveTemplate(template, errors, model);
+    }
+
+
+    /**
+     * Saves a existing {@link MatrixTemplate}.
+     * 
+     * @param template
+     * @param errors
+     * @param model
+     * @return
+     */
+    @RequestMapping(value = "/skillz/templates/{id}", method = PUT)
+    public String saveExistingTemplate(
+            @ModelAttribute("template") MatrixTemplate template, Errors errors,
+            Model model) {
+
+        return saveTemplate(template, errors, model);
+    }
+
+
+    /**
+     * Saves a {@link MatrixTemplate}.
+     * 
+     * @param template
+     * @param errors
+     * @param model
+     * @return
+     */
+    public String saveTemplate(MatrixTemplate template, Errors errors,
             Model model) {
 
         matrixTemplateValidator.validate(template, errors);
@@ -248,7 +302,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.template.save.success", result.getName()));
 
-        return UrlUtils.redirect("../skillz#tabs-2");
+        return UrlUtils.redirect(SKILLZ_TEMPLATES);
     }
 
 
@@ -261,7 +315,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.template.delete.success", template.getName()));
 
-        return UrlUtils.redirect("../#tabs-2");
+        return UrlUtils.redirect(SKILLZ_TEMPLATES);
     }
 
 
@@ -354,8 +408,7 @@ public class SkillzController {
             @ModelAttribute("project") Project project, Errors errors,
             SessionStatus conversation, Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, "../skillz#tabs-3", errors,
-                conversation, model, user);
+        return savePublicProject(project, errors, conversation, model, user);
     }
 
 
@@ -374,13 +427,12 @@ public class SkillzController {
             @ModelAttribute("project") Project project, Errors errors,
             SessionStatus conversation, Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, "../../skillz#tabs-3", errors,
-                conversation, model, user);
+        return savePublicProject(project, errors, conversation, model, user);
     }
 
 
-    private String savePublicProject(Project project, String redirectUrl,
-            Errors errors, SessionStatus conversation, Model model, User user) {
+    private String savePublicProject(Project project, Errors errors,
+            SessionStatus conversation, Model model, User user) {
 
         // validate project
         projectValidator.validate(project, errors);
@@ -396,7 +448,7 @@ public class SkillzController {
             return UrlUtils.redirect(user.getUsername());
         }
 
-        return UrlUtils.redirect(redirectUrl);
+        return UrlUtils.redirect(SKILLZ_PROJECTS);
     }
 
 
@@ -471,7 +523,7 @@ public class SkillzController {
             return UrlUtils.redirect("./" + user.getUsername());
         }
 
-        return UrlUtils.redirect("../#tabs-3");
+        return UrlUtils.redirect(SKILLZ_PROJECTS);
     }
 
 
@@ -479,6 +531,10 @@ public class SkillzController {
 
     /**
      * Shows the form for a {@link Level}.
+     * 
+     * @param level
+     * @param model
+     * @return
      */
     @RequestMapping(value = { "/skillz/levels/{id}", "/skillz/levels/form{id}" }, method = GET)
     public String level(@PathVariable("id") Level level, Model model) {
@@ -492,8 +548,22 @@ public class SkillzController {
 
 
     @RequestMapping(value = "/skillz/levels", method = POST)
-    public String saveLevel(@ModelAttribute("level") Level level,
+    public String saveNewLevel(@ModelAttribute("level") Level level,
             Errors errors, Model model) {
+
+        return saveLevel(level, errors, model);
+    }
+
+
+    @RequestMapping(value = "/skillz/levels/{id}", method = PUT)
+    public String saveExisitingLevel(@ModelAttribute("level") Level level,
+            Errors errors, Model model) {
+
+        return saveLevel(level, errors, model);
+    }
+
+
+    private String saveLevel(Level level, Errors errors, Model model) {
 
         levelValidator.validate(level, errors);
 
@@ -506,7 +576,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.level.save.success", result.getName()));
 
-        return UrlUtils.redirect("../skillz#tabs-4");
+        return UrlUtils.redirect(SKILLZ_LEVELS);
     }
 
 
@@ -518,7 +588,7 @@ public class SkillzController {
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.level.delete.success", level.getName()));
 
-        return UrlUtils.redirect("../#tabs-4");
+        return UrlUtils.redirect(SKILLZ_LEVELS);
     }
 
 
@@ -534,7 +604,7 @@ public class SkillzController {
 
         skillManagement.moveLevelUp(level);
 
-        return UrlUtils.redirect("../../../skillz#tabs-4");
+        return UrlUtils.redirect(SKILLZ_LEVELS);
     }
 
 
@@ -550,7 +620,7 @@ public class SkillzController {
 
         skillManagement.moveLevelDown(level);
 
-        return UrlUtils.redirect("../../../skillz#tabs-4");
+        return UrlUtils.redirect(SKILLZ_LEVELS);
     }
 
 }

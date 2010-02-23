@@ -4,11 +4,12 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="core" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://www.joda.org/joda/time/tags" %>
-<%@ taglib prefix="minos" uri="http://www.synyx.org/minos/tags" %>
+
+<%@ taglib prefix="minos" tagdir="/WEB-INF/tags/core" %>
 
 <h2><spring:message code="skillz.template" /></h2>
-<spring:url value="/web/skillz/templates" var="action" />
-<form:form modelAttribute="template" action="${action}">
+
+<minos:form modelAttribute="template" action="/web/skillz/templates">
 	<table class="form">
 		<tr>
 			<td class="label"><spring:message code="skillz.template.name" />:</td>
@@ -36,4 +37,4 @@
 			</td>
 		</tr>
 	</table>
-</form:form>
+</minos:form>

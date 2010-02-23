@@ -4,10 +4,11 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="core" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<%@ taglib prefix="minos" tagdir="/WEB-INF/tags/core" %>
+
 <h2><spring:message code="skillz.level" /></h2>
 
-<spring:url value="/web/skillz/levels" var="action" />
-<form:form modelAttribute="level" action="${action}">
+<minos:form modelAttribute="level" action="/web/skillz/levels">
 	<table class="form">
 		<tr>
 			<td class="label"><spring:message code="name" />:</td>
@@ -24,4 +25,4 @@
 			</tr>
 		</tfoot>
 	</table>
-</form:form>
+</minos:form>

@@ -8,8 +8,8 @@
 <%@ taglib prefix="c" tagdir="/WEB-INF/tags/core" %>
 
 <h2><spring:message code="skillz.category" /></h2>
-<spring:url value="/web/skillz/categories" var="action" />
-<form:form modelAttribute="category" action="${action}">
+
+<c:form modelAttribute="category" action="/web/skillz/categories">
 	<table class="form">
 		<tr>
 			<td class="label"><spring:message code="skillz.category.name" />:</td>
@@ -28,18 +28,18 @@
 			</td>
 		</tr>
 	</table>
-</form:form>
+</c:form>
 
+<spring:url value="/web/skillz/skill" var="skillurl" />
 <core:if test="${!category.new}">
 
 	<h2><spring:message code="skillz.skills" /></h2>
 	<table id="skills" class="form">
 		<core:forEach items="${category.skillz}" var="skill">
 			<tr>
-				<spring:url value="/web/skillz/skill" var="skillaction" />
-				<form:form action="${skillaction}" method="post">
+				<form:form action="${skillurl}" method="post">
 					<td>
-						<input type="hidden" value="${skill.id}" name="skill" />
+						<input type="hidden" name="skill" value="${skill.id}" />
 						<input type="text" name="name" value="${skill.name}" />
 					</td> 
 					<td>
@@ -50,7 +50,7 @@
 								</core:if>
 							</core:forEach>
 						</select>
-						<input type="submit" value="<spring:message code="skillz.skill.move" />" />
+						<input type="submit" name="moveSkill" value="<spring:message code="skillz.skill.move" />" />
 					</td>
 				</form:form>
 					<td>
@@ -60,11 +60,11 @@
 		</core:forEach>
 		<tr>
 			<td colspan="3">
-				<form name="addSkill" action=".." method="post">
+				<form:form action="${skillurl}" method="post">
 					<input type="hidden" name="category" value="${category.id}" />
 					<input type="text" name="name" />
-					<input type="submit" value="<spring:message code="core.ui.save" />" />
-				</form>
+					<input type="submit" name="addSkill" value="<spring:message code="core.ui.save" />" />
+				</form:form>
 			</td>
 		</tr>
 	</table>

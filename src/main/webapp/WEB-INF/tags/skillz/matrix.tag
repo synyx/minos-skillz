@@ -5,6 +5,8 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 
+<%@ taglib prefix="minos" tagdir="/WEB-INF/tags/core" %>
+
 <%@ attribute name="matrix" type="org.synyx.minos.skillz.domain.SkillMatrix"%>
 <%@ attribute name="levels" type="java.util.Collection"%>
 <%@ attribute name="editable" type="java.lang.Boolean" required="false"%>
@@ -127,7 +129,7 @@ $(function() {
 </script>
 </core:if>
 
-<form:form modelAttribute="matrix">
+<minos:form modelAttribute="matrix" action="/web/skillz/resume/matrix">
 	<table id="${id}" class="form">
 		<tr>
 			<th></th>
@@ -172,21 +174,22 @@ $(function() {
 		</core:forEach>
 		<tfoot>
 			<tr id="footer">
+				<spring:url value="/web/skillz/resume" var="resumeurl" />
 				<core:choose>
 					<core:when test="${editable}">
 						<td colspan="${fn:length(levels) + 1}">
 							<input type="submit" value="<spring:message code="core.ui.ok" />" />
-							<a class="cancel" href="/minos/web/skillz/resume#tabs-3"><spring:message code="core.ui.cancel" /></a>
+							<a class="cancel" href="${resumeurl}#tabs-3"><spring:message code="core.ui.cancel" /></a>
 						</td>
 					</core:when>
 					<core:otherwise>
 						<td></td>
 						<td colspan="${fn:length(levels)}">
-							<a href="resume/matrix/form"><spring:message code="skillz.skillMatrix.edit" /></a>
+							<a href="${resumeurl}/matrix/form"><spring:message code="skillz.skillMatrix.edit" /></a>
 						</td>
 					</core:otherwise>
 				</core:choose>
 			</tr>
 		</tfoot>
 	</table>
-</form:form>
+</minos:form>

@@ -38,6 +38,8 @@ import org.synyx.minos.skillz.web.validation.ReferenceValidator;
 @Controller
 public class ReferencesController {
 
+    private static final String RESUME_REFERENCES = "/skillz/resume#tabs-2";
+
     private final SkillManagement skillManagement;
     private final ResumeManagement resumeManagement;
     private final ReferenceValidator referenceValidator;
@@ -77,7 +79,7 @@ public class ReferencesController {
         model.addAttribute(Core.MESSAGE, Message
                 .success("skillz.reference.delete.success"));
 
-        return UrlUtils.redirect("../../resume#tabs-2");
+        return UrlUtils.redirect(RESUME_REFERENCES);
     }
 
 
@@ -86,8 +88,7 @@ public class ReferencesController {
             @ModelAttribute("reference") Activity reference, Errors errors,
             Model model, SessionStatus session, @CurrentUser User user) {
 
-        return saveActivity(reference, errors, model, session,
-                "../resume#tabs-2", user);
+        return saveActivity(reference, errors, model, session, user);
     }
 
 
@@ -96,13 +97,12 @@ public class ReferencesController {
             @ModelAttribute("reference") Activity reference, Errors errors,
             Model model, SessionStatus session, @CurrentUser User user) {
 
-        return saveActivity(reference, errors, model, session,
-                "../../resume#tabs-2", user);
+        return saveActivity(reference, errors, model, session, user);
     }
 
 
     private String saveActivity(Activity reference, Errors errors, Model model,
-            SessionStatus session, String redirectUrl, User user) {
+            SessionStatus session, User user) {
 
         referenceValidator.validate(reference, errors);
 
@@ -118,7 +118,7 @@ public class ReferencesController {
                         "skillz.reference.save.success", result.getProject()
                                 .getName()));
 
-        return UrlUtils.redirect(redirectUrl);
+        return UrlUtils.redirect(RESUME_REFERENCES);
     }
 
 

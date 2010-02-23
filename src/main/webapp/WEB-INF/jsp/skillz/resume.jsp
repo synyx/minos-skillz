@@ -75,8 +75,9 @@
 		<tfoot>
 			<tr>
 				<td></td>
-				<td colspan="3"><input type="submit"
-					value="<spring:message code="core.ui.save" />" /></td>
+				<td colspan="3">
+					<input type="submit" value="<spring:message code="core.ui.save" />" />
+				</td>
 			</tr>
 		</tfoot>
 	</table>

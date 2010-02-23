@@ -63,6 +63,9 @@ import org.synyx.minos.skillz.service.SkillManagement;
 @SessionAttributes(types = { SkillMatrix.class, Resume.class })
 public class ResumeController {
 
+    private static final String RESUME = "/skillz/resume";
+    private static final String RESUMES = "/skillz/resumes";
+
     private static final int THUMBNAIL_WIDTH = 200;
 
     private final SkillManagement skillManagement;
@@ -122,7 +125,7 @@ public class ResumeController {
     }
 
 
-    @RequestMapping("/skillz/resume/matrix/form")
+    @RequestMapping(value = "/skillz/resume/matrix/form", method = GET)
     public String matrix(Model model, @CurrentUser User user) {
 
         SkillMatrix matrix = resumeManagement.getResume(user).getSkillz();
@@ -136,14 +139,14 @@ public class ResumeController {
     }
 
 
-    @RequestMapping(value = "/skillz/resume/matrix/form", method = POST)
-    public String saveMatrix(@ModelAttribute("matrix") SkillMatrix matrix,
-            SessionStatus session) {
+    @RequestMapping(value = "/skillz/resume/matrix/{id}", method = PUT)
+    public String saveExistingMatrix(
+            @ModelAttribute("matrix") SkillMatrix matrix, SessionStatus session) {
 
         resumeManagement.save(matrix);
         session.setComplete();
 
-        return UrlUtils.redirect("../../resume#tabs-3");
+        return UrlUtils.redirect("/skillz/resume#tabs-3");
     }
 
 
@@ -154,7 +157,7 @@ public class ResumeController {
      * @param user
      * @return
      */
-    @RequestMapping(value = "/skillz/resume", method = GET)
+    @RequestMapping(value = RESUME, method = GET)
     public String resume(Model model, @CurrentUser User user) {
 
         model.addAttribute("owner", user);
@@ -171,7 +174,7 @@ public class ResumeController {
      * @param outputStream
      * @return
      */
-    @RequestMapping(value = "/skillz/resume", method = GET, params = "pdfexport")
+    @RequestMapping(value = RESUME, method = GET, params = "pdfexport")
     public void resumePdf(@CurrentUser User user, HttpServletResponse response,
             WebRequest webRequest, OutputStream outputStream) {
 
@@ -194,7 +197,7 @@ public class ResumeController {
      * @param outputStream
      * @return
      */
-    @RequestMapping(value = "/skillz/resume", method = GET, params = "zipexport")
+    @RequestMapping(value = RESUME, method = GET, params = "zipexport")
     public void resumeZip(@CurrentUser User user, HttpServletResponse response,
             WebRequest webRequest, OutputStream outputStream) {
 
@@ -251,13 +254,13 @@ public class ResumeController {
      * @param conversation
      * @return
      */
-    @RequestMapping(value = "/skillz/resume", method = PUT)
+    @RequestMapping(value = RESUME, method = PUT)
     public String saveUserResume(@ModelAttribute("resume") Resume resume,
             Model model, SessionStatus conversation) {
 
         saveExistingResume(resume, model, conversation);
 
-        return UrlUtils.redirect("resume");
+        return UrlUtils.redirect(RESUME);
     }
 
 
@@ -275,7 +278,7 @@ public class ResumeController {
 
         saveExistingResume(resume, model, conversation);
 
-        return UrlUtils.redirect("../resumes");
+        return UrlUtils.redirect(RESUMES);
     }
 
 
@@ -333,7 +336,7 @@ public class ResumeController {
                     .success("skillz.resume.photo.save.success"));
         }
 
-        return UrlUtils.redirect("../../resume");
+        return UrlUtils.redirect(RESUME);
     }
 
 
@@ -347,11 +350,11 @@ public class ResumeController {
         model.addAttribute(Core.MESSAGE, Message
                 .success("skillz.resume.photo.delete.success"));
 
-        return UrlUtils.redirect("../../resume");
+        return UrlUtils.redirect(RESUME);
     }
 
 
-    @RequestMapping(value = "/skillz/resumes", method = GET)
+    @RequestMapping(value = RESUMES, method = GET)
     public String resumes(Model model, Pageable pageable) {
 
         Page<Resume> resumes = resumeAdminstration.getResumes(pageable);
@@ -370,7 +373,7 @@ public class ResumeController {
     }
 
 
-    @RequestMapping(value = "/skillz/resumes", method = GET, params = "selectFilter")
+    @RequestMapping(value = RESUMES, method = GET, params = "selectFilter")
     public String resumes(Model model, Pageable pageable,
             @RequestParam String selectFilter) {
 
@@ -381,7 +384,7 @@ public class ResumeController {
     }
 
 
-    @RequestMapping(value = "/skillz/resumes", method = GET, params = "filterName")
+    @RequestMapping(value = RESUMES, method = GET, params = "filterName")
     public String resumes(Model model, Pageable pageable,
             @RequestParam String filterName, WebRequest webRequest) {
 
@@ -414,7 +417,7 @@ public class ResumeController {
     }
 
 
-    @RequestMapping(value = "/skillz/resumes", method = POST, params = "resumes")
+    @RequestMapping(value = RESUMES, method = POST, params = "resumes")
     public String assignResumesToTemplate(
             @RequestParam("resumes") List<Resume> resumes,
             @RequestParam("template") MatrixTemplate template) {
@@ -423,7 +426,7 @@ public class ResumeController {
             resumeManagement.save(resume, template);
         }
 
-        return UrlUtils.redirect("resumes");
+        return UrlUtils.redirect(RESUMES);
     }
 
 
