@@ -2,7 +2,9 @@ package org.synyx.minos.skillz.web;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +13,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.joda.time.DateMidnight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,11 +52,13 @@ import org.synyx.minos.skillz.domain.Resume;
 import org.synyx.minos.skillz.domain.SkillMatrix;
 import org.synyx.minos.skillz.domain.resume.ResumeAttributeFilter;
 import org.synyx.minos.skillz.domain.resume.ResumeFilter;
+import org.synyx.minos.skillz.service.DocbookCreationException;
 import org.synyx.minos.skillz.service.PdfDocbookCreator;
 import org.synyx.minos.skillz.service.ResumeAdminstration;
 import org.synyx.minos.skillz.service.ResumeManagement;
 import org.synyx.minos.skillz.service.ResumeZipCreator;
 import org.synyx.minos.skillz.service.SkillManagement;
+import org.synyx.minos.skillz.service.ZipCreationException;
 
 
 /**
@@ -166,7 +174,9 @@ public class ResumeController {
 
 
     /**
-     * Stream's the current {@link User}'s {@link Resume} as PDF.
+     * Creates the current {@link User}'s {@link Resume} as a PDF file in a
+     * temporary directory and redirects to it if the creation was successful,
+     * show an error message otherwise.
      * 
      * @param user
      * @param response
@@ -174,22 +184,60 @@ public class ResumeController {
      * @param outputStream
      * @return
      */
-    @RequestMapping(value = RESUME, method = GET, params = "pdfexport")
-    public void resumePdf(@CurrentUser User user, HttpServletResponse response,
-            WebRequest webRequest, OutputStream outputStream) {
+    @RequestMapping(value = RESUME, method = POST, params = "pdfexport")
+    public String resumePdf(@CurrentUser User user, Model model,
+            HttpSession session, WebRequest webRequest) {
+
+        File file = null;
+        try {
+            file =
+                    pdfDocbookCreator
+                            .createTempPdfFile(
+                                    getServletTempDirectory(session
+                                            .getServletContext()),
+                                    resumeManagement
+                                            .getFilteredResume(
+                                                    user,
+                                                    getResumeAttributeFilters(webRequest)),
+                                    skillManagement.getLevels());
+        } catch (DocbookCreationException e) {
+            model.addAttribute(Core.MESSAGE, Message
+                    .error("skillz.resume.export.pdf.failed"));
+            return resume(model, user);
+        }
+
+        return UrlUtils.redirect("/skillz/resume/pdf/" + file.getName());
+
+    }
+
+
+    /**
+     * Stream's the {@link Resume} with the given file name as PDF.
+     * 
+     * @param filename
+     * @param response
+     * @param session
+     * @param outputStream
+     * @throws IOException
+     */
+    @RequestMapping(value = "/skillz/resume/pdf/{filename}", method = GET)
+    public void streamResumePdf(@PathVariable("filename") String filename,
+            HttpServletResponse response, HttpSession session,
+            OutputStream outputStream) throws IOException {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-disposition",
                 "attachment; filename=resume.pdf");
 
-        pdfDocbookCreator.streamPdf(resumeManagement.getFilteredResume(user,
-                getResumeAttributeFilters(webRequest)), skillManagement
-                .getLevels(), outputStream);
+        streamFile(session.getServletContext(), filename, outputStream);
+
     }
 
 
     /**
-     * Stream's the current {@link User}'s {@link Resume} as ZIP.
+     * Creates the current {@link User}'s {@link Resume} as as a ZIP file in a
+     * temporary directory and redirects to it if the creation was successful,
+     * show an error message otherwise.
      * 
      * @param user
      * @param response
@@ -197,17 +245,90 @@ public class ResumeController {
      * @param outputStream
      * @return
      */
-    @RequestMapping(value = RESUME, method = GET, params = "zipexport")
-    public void resumeZip(@CurrentUser User user, HttpServletResponse response,
-            WebRequest webRequest, OutputStream outputStream) {
+    @RequestMapping(value = RESUME, method = POST, params = "zipexport")
+    public String resumeZip(@CurrentUser User user, Model model,
+            HttpSession session, WebRequest webRequest) {
+
+        File file = null;
+        try {
+            file =
+                    resumeZipCreator
+                            .createTempZipFile(
+                                    getServletTempDirectory(session
+                                            .getServletContext()),
+                                    resumeManagement
+                                            .getFilteredResume(
+                                                    user,
+                                                    getResumeAttributeFilters(webRequest)),
+                                    skillManagement.getLevels());
+        } catch (ZipCreationException e) {
+            model.addAttribute(Core.MESSAGE, Message
+                    .error("skillz.resume.export.zip.failed"));
+            return resume(model, user);
+        }
+
+        return UrlUtils.redirect("/skillz/resume/zip/" + file.getName());
+    }
+
+
+    /**
+     * Stream's the {@link Resume} with the given file name as ZIP.
+     * 
+     * @param filename
+     * @param session
+     * @param response
+     * @param outputStream
+     * @throws IOException
+     */
+    @RequestMapping(value = "/skillz/resume/zip/{filename}", method = GET)
+    public void streamResumeZip(@PathVariable("filename") String filename,
+            HttpSession session, HttpServletResponse response,
+            OutputStream outputStream) throws IOException {
 
         response.setContentType("application/zip");
         response.setHeader("content-disposition",
                 "attachment; filename=resume.zip");
 
-        resumeZipCreator.streamZip(resumeManagement.getFilteredResume(user,
-                getResumeAttributeFilters(webRequest)), skillManagement
-                .getLevels(), outputStream);
+        streamFile(session.getServletContext(), filename, outputStream);
+
+    }
+
+
+    /**
+     * Streams a {@link File} from the temporary directory of the servlet
+     * container and deletes it afterwards.
+     * 
+     * @param servletContext
+     * @param filename
+     * @param outputStream
+     * @throws IOException
+     */
+    private void streamFile(ServletContext servletContext, String filename,
+            OutputStream outputStream) throws IOException {
+
+        File file = new File(getServletTempDirectory(servletContext), filename);
+        InputStream inputStream = null;
+        try {
+            inputStream = FileUtils.openInputStream(file);
+            IOUtils.copy(inputStream, outputStream);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+            FileUtils.deleteQuietly(file);
+        }
+    }
+
+
+    /**
+     * Gets the temporary directory of the servlet container from a
+     * {@link ServletContext}.
+     * 
+     * @param servletContext
+     * @return
+     */
+    private File getServletTempDirectory(ServletContext servletContext) {
+
+        return (File) servletContext
+                .getAttribute("javax.servlet.context.tempdir");
     }
 
 

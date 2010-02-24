@@ -140,7 +140,7 @@
 <core:if test="${not empty filters}">
 	<h3><spring:message code="skillz.resume.filters" /></h3>
 </core:if>
-<form:form method="get" action="resume">
+<form:form method="post" action="resume">
 	<core:forEach items="${filters}" var="filter">
 		<input type="checkbox" name="${filter.messageKey}" value="1" /> <spring:message code="${filter.messageKey}" /><br />
 	</core:forEach>

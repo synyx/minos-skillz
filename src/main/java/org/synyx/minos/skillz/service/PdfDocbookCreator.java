@@ -16,6 +16,20 @@ import org.synyx.minos.skillz.domain.Resume;
 public interface PdfDocbookCreator {
 
     /**
+     * Creates a temporary (aka 'with a unique file name') PDF {@link File} from
+     * a {@link Resume} instance.
+     * 
+     * @param tempDirectory
+     * @param resume
+     * @param levels
+     * @return
+     * @throws DocbookCreationException
+     */
+    File createTempPdfFile(File tempDirectory, Resume resume, List<Level> levels)
+            throws DocbookCreationException;
+
+
+    /**
      * Creates a PDF {@link OutputStream} from a Docbook XML {@link String} and
      * XSLT/XSL-FO {@link File}.
      * 

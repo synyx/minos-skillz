@@ -5,6 +5,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.synyx.minos.core.web.WebTestUtils.*;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.synyx.minos.core.Core;
 import org.synyx.minos.core.domain.User;
 import org.synyx.minos.core.web.Message;
+import org.synyx.minos.skillz.domain.Level;
 import org.synyx.minos.skillz.domain.Resume;
 import org.synyx.minos.skillz.domain.resume.ResumeAttributeFilter;
 import org.synyx.minos.skillz.service.PdfDocbookCreator;
@@ -98,13 +100,17 @@ public class ResumeControllerUnitTest {
 
         ResumeAttributeFilter filter = mock(ResumeAttributeFilter.class);
         WebRequest webRequest = mock(WebRequest.class);
+        File file = mock(File.class);
         when(filter.getMessageKey()).thenReturn("xyz");
         when(webRequest.getParameter(filter.getMessageKey())).thenReturn("1");
         when(resumeManagement.getResumeAttributeFilters()).thenReturn(
                 Collections.singletonList(filter));
+        when(
+                pdfDocbookCreator.createTempPdfFile((File) anyObject(),
+                        (Resume) anyObject(), (List<Level>) anyObject()))
+                .thenReturn(file);
 
-        controller.resumePdf(null, new MockHttpServletResponse(), webRequest,
-                null);
+        controller.resumePdf(null, null, new MockHttpSession(), webRequest);
 
         ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
         verify(resumeManagement).getFilteredResume((User) anyObject(),

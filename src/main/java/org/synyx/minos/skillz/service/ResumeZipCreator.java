@@ -1,5 +1,6 @@
 package org.synyx.minos.skillz.service;
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -13,6 +14,20 @@ import org.synyx.minos.skillz.domain.Resume;
  * @author Markus Knittig - knittig@synyx.de
  */
 public interface ResumeZipCreator {
+
+    /**
+     * Creates a temporary (aka 'with a unique file name') ZIP {@link File} from
+     * a {@link Resume} instance.
+     * 
+     * @param tempDirectory
+     * @param resume
+     * @param levels
+     * @return
+     * @throws DocbookCreationException
+     */
+    File createTempZipFile(File tempDirectory, Resume resume, List<Level> levels)
+            throws ZipCreationException;
+
 
     /**
      * Creates a ZIP {@link OutputStream} from a {@link Resume} instance.
