@@ -3,29 +3,18 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:plugin="http://schemas.synyx.org/hera"
+    xmlns:module="http://schemas.synyx.org/minos/module"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		http://schemas.synyx.org/hera http://schemas.synyx.org/hera/hera.xsd">
+		http://schemas.synyx.org/hera http://schemas.synyx.org/hera/hera.xsd
+        http://schemas.synyx.org/minos/module http://schemas.synyx.org/minos/module/minos-module.xsd">
 
-    <bean id="skillz" class="org.synyx.minos.core.module.internal.MinosModule">
-        <constructor-arg>
-            <util:constant static-field="org.synyx.minos.skillz.Skillz.IDENTIFIER" />
-        </constructor-arg>
-        <property name="lifecycle">
-            <bean class="org.synyx.minos.skillz.bootstrap.SkillzInstaller">
-                <constructor-arg ref="skillManagement" />
-                <constructor-arg ref="resumeManagement" />
-                <constructor-arg ref="userManagement" />
-            </bean>
-        </property>
-        <property name="dependsOn">
-            <list>
-                <ref bean="umt" />
-            </list>
-        </property>
-    </bean>
-    <bean class="org.synyx.minos.core.authentication.ModulePermissionAware">
-        <constructor-arg ref="skillz" />
+    <module:module id="skillz" depends-on="umt" lifecycle-ref="skillzLifecycle" />
+        
+    <bean id="skillzLifecycle" class="org.synyx.minos.skillz.bootstrap.SkillzInstaller">
+        <constructor-arg ref="skillManagement" />
+        <constructor-arg ref="resumeManagement" />
+        <constructor-arg ref="userManagement" />
     </bean>
 
 	<bean id="docbookTemplateService" class="org.synyx.minos.skillz.service.VelocityDocbookTemplateServiceImpl">
@@ -99,11 +88,6 @@
     
     <bean class="org.synyx.minos.skillz.domain.resume.CategoriesFilter">
     	<constructor-arg ref="categoryDao" />
-    </bean>
-    
-    <bean class="org.synyx.minos.core.message.PrefixAwareMessageSource">
-        <property name="prefix" value="skillz" />
-        <property name="basename" value="META-INF.minos.skillz.messages" />
     </bean>
     
     <!-- Aspects -->
