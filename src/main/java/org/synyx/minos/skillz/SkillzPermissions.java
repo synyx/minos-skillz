@@ -1,4 +1,4 @@
-package org.synyx.minos.skillz.security;
+package org.synyx.minos.skillz;
 
 
 

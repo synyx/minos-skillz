@@ -1,6 +1,6 @@
 package org.synyx.minos.skillz.web;
 
-import static org.synyx.minos.skillz.security.SkillzPermissions.*;
+import static org.synyx.minos.skillz.SkillzPermissions.*;
 
 import java.util.Arrays;
 import java.util.List;
