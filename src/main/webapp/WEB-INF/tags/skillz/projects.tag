@@ -20,7 +20,7 @@
 	</c:otherwise>
 </c:choose>
 
-<display:table id="project" name="projects" requestURI="" >
+<display:table id="project" name="projects" requestURI="${privateProject ? '' : '#tabs-3'}" >
 	<minos:column titleKey="name">
 		<a href="${prefix}${project.id}"><c:out value="${project.name}" /></a>
 	</minos:column>
