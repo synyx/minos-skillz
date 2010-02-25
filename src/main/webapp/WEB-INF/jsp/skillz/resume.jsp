@@ -30,7 +30,7 @@
 
 <div id="tabs-1" class="tab">
 
-<c:form modelAttribute="resume" action="/web/skillz/resumes" resourceAction="${resume.subject eq owner ? 'resume' : ''}">
+<c:form modelAttribute="resume" action="/web/skillz/resumes">
 	<table class="form" style="float: left">
 		<tr>
 			<td class="label"><spring:message code="name" />:</td>
