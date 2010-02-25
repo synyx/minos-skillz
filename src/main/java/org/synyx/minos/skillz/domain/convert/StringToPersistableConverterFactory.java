@@ -18,7 +18,7 @@ import org.synyx.hades.util.ClassUtils;
  * 
  * @author Markus Knittig - knittig@synyx.de
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings("unchecked")
 public class StringToPersistableConverterFactory implements
         ConverterFactory<String, Persistable<Long>>, ApplicationContextAware {
 
