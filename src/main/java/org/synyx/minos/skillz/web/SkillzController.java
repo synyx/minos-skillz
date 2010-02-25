@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.support.SessionStatus;
 import org.synyx.minos.core.Core;
 import org.synyx.minos.core.domain.User;
 import org.synyx.minos.core.web.CurrentUser;
@@ -398,7 +397,6 @@ public class SkillzController {
      * 
      * @param project
      * @param errors
-     * @param conversation
      * @param model
      * @param user
      * @return
@@ -406,9 +404,9 @@ public class SkillzController {
     @RequestMapping(value = "/skillz/projects", method = POST)
     public String saveNewPublicProject(
             @ModelAttribute("project") Project project, Errors errors,
-            SessionStatus conversation, Model model, @CurrentUser User user) {
+            Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, errors, conversation, model, user);
+        return savePublicProject(project, errors, model, user);
     }
 
 
@@ -417,7 +415,6 @@ public class SkillzController {
      * 
      * @param project
      * @param errors
-     * @param conversation
      * @param model
      * @param user
      * @return
@@ -425,14 +422,14 @@ public class SkillzController {
     @RequestMapping(value = "/skillz/projects/{id:\\d+}", method = PUT)
     public String saveExistingPublicProject(
             @ModelAttribute("project") Project project, Errors errors,
-            SessionStatus conversation, Model model, @CurrentUser User user) {
+            Model model, @CurrentUser User user) {
 
-        return savePublicProject(project, errors, conversation, model, user);
+        return savePublicProject(project, errors, model, user);
     }
 
 
     private String savePublicProject(Project project, Errors errors,
-            SessionStatus conversation, Model model, User user) {
+            Model model, User user) {
 
         // validate project
         projectValidator.validate(project, errors);
@@ -442,7 +439,6 @@ public class SkillzController {
         }
 
         // validation was successful
-        saveProject(project, model, conversation);
 
         if (project.belongsTo(user)) {
             return UrlUtils.redirect(user.getUsername());
@@ -458,14 +454,13 @@ public class SkillzController {
      * @param project
      * @param errors
      * @param model
-     * @param conversation
      * @param user
      * @return
      */
     @RequestMapping(value = { "/skillz/projects/{username:[a-zA-Z_]\\w*}" }, method = POST)
     public String savePrivateProject(
             @ModelAttribute("project") Project project, Errors errors,
-            Model model, SessionStatus conversation, @CurrentUser User user) {
+            Model model, @CurrentUser User user) {
 
         // validate project
         projectValidator.validate(project, errors);
@@ -477,7 +472,7 @@ public class SkillzController {
             return "skillz/project";
         }
 
-        saveProject(project, model, conversation);
+        saveProject(project, model);
 
         return UrlUtils.redirect("../projects/"
                 + project.getOwner().getUsername());
@@ -489,13 +484,10 @@ public class SkillzController {
      * 
      * @param project
      * @param model
-     * @param conversation
      */
-    private void saveProject(Project project, Model model,
-            SessionStatus conversation) {
+    private void saveProject(Project project, Model model) {
 
         project = skillManagement.save(project);
-        conversation.setComplete();
 
         model.addAttribute(Core.MESSAGE, Message.success(
                 "skillz.project.save.success", project.getName()));

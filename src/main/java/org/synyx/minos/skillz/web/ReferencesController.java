@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.support.SessionStatus;
 import org.synyx.minos.core.Core;
 import org.synyx.minos.core.domain.User;
 import org.synyx.minos.core.web.CurrentUser;
@@ -86,23 +85,23 @@ public class ReferencesController {
     @RequestMapping(value = "/skillz/resume/references", method = POST)
     public String createActivity(
             @ModelAttribute("reference") Activity reference, Errors errors,
-            Model model, SessionStatus session, @CurrentUser User user) {
+            Model model, @CurrentUser User user) {
 
-        return saveActivity(reference, errors, model, session, user);
+        return saveActivity(reference, errors, model, user);
     }
 
 
     @RequestMapping(value = "/skillz/resume/references/{id}", method = PUT)
     public String updateActivity(
             @ModelAttribute("reference") Activity reference, Errors errors,
-            Model model, SessionStatus session, @CurrentUser User user) {
+            Model model, @CurrentUser User user) {
 
-        return saveActivity(reference, errors, model, session, user);
+        return saveActivity(reference, errors, model, user);
     }
 
 
     private String saveActivity(Activity reference, Errors errors, Model model,
-            SessionStatus session, User user) {
+            User user) {
 
         referenceValidator.validate(reference, errors);
 
@@ -111,12 +110,9 @@ public class ReferencesController {
         }
 
         Activity result = resumeManagement.save(reference);
-        session.setComplete();
 
-        model
-                .addAttribute(Core.MESSAGE, Message.success(
-                        "skillz.reference.save.success", result.getProject()
-                                .getName()));
+        model.addAttribute(Core.MESSAGE, Message.success(
+                "skillz.reference.save.success", result.getProject().getName()));
 
         return UrlUtils.redirect(RESUME_REFERENCES);
     }
