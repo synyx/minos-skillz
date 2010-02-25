@@ -52,8 +52,7 @@ public class ProjectValidator implements Validator {
      * 
      * @see org.springframework.validation.Validator#supports(java.lang.Class)
      */
-    @SuppressWarnings("unchecked")
-    public boolean supports(Class clazz) {
+    public boolean supports(Class<?> clazz) {
 
         return Project.class.equals(clazz);
     }

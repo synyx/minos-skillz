@@ -94,7 +94,7 @@ public class ResumeControllerUnitTest {
     }
 
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void processesAttributeFiltersCorrectly() throws Exception {
 
