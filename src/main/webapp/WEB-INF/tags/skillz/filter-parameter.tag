@@ -7,10 +7,10 @@
 
 <%@tag import="java.util.Arrays"%>
 <%@tag import="org.synyx.hades.domain.Persistable"%>
-<%@tag import="org.synyx.minos.skillz.domain.resume.SingleChoiceParameter"%>
-<%@tag import="org.synyx.minos.skillz.domain.resume.MultipleChoiceParameter"%>
+<%@tag import="org.synyx.skills.domain.resume.SingleChoiceParameter"%>
+<%@tag import="org.synyx.skills.domain.resume.MultipleChoiceParameter"%>
 
-<%@ attribute name="filterParam" type="org.synyx.minos.skillz.domain.resume.ResumeFilterParameter" %>
+<%@ attribute name="filterParam" type="org.synyx.skills.domain.resume.ResumeFilterParameter" %>
 <%@ attribute name="index" type="java.lang.Integer" %>
 
 <%!

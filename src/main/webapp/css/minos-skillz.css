@@ -78,3 +78,183 @@ a.projects {
 a.templates {
 	background-image: url(../images/skillz/template.png);
 }
+
+/** jquery UI styles **/
+
+.ui-widget-content {
+    background-color: #FCFDFD;
+}
+.ui-datepicker {
+    width: 16em;
+}
+.ui-datepicker-calendar {
+    border: 1px solid #DDDDDD;
+}
+.ui-datepicker .ui-datepicker-header {
+    background-color: #DDDDDD;
+    padding: 0.2em 0;
+}
+.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next {
+    height: 2em;
+    position: absolute;
+    top: 2px;
+    width: 2em;
+}
+.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover {
+    top: 1px;
+}
+.ui-datepicker .ui-datepicker-prev {
+    left: 2px;
+}
+.ui-datepicker .ui-datepicker-next {
+    right: 2px;
+}
+.ui-datepicker .ui-datepicker-prev-hover {
+    cursor: pointer;
+    left: 1px;
+}
+.ui-datepicker .ui-datepicker-next-hover {
+    cursor: pointer;
+    right: 1px;
+}
+.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span {
+    display: block;
+    left: 50%;
+    margin-left: -17px;
+    margin-top: -11px;
+    position: absolute;
+    top: 50%;
+}
+.ui-datepicker .ui-datepicker-title {
+    line-height: 1.8em;
+    margin: 0 2.3em;
+    text-align: center;
+}
+.ui-datepicker .ui-datepicker-title select {
+    float: left;
+    font-size: 1em;
+    margin: 1px 0;
+}
+.ui-datepicker select.ui-datepicker-month-year {
+    width: 100%;
+}
+.ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year {
+    width: 49%;
+}
+.ui-datepicker .ui-datepicker-title select.ui-datepicker-year {
+    float: right;
+}
+.ui-datepicker table {
+    border-collapse: collapse;
+    font-size: 0.9em;
+    margin: 0 0 0.4em;
+    width: 100%;
+}
+.ui-datepicker th {
+    border: 0 none;
+    font-weight: bold;
+    padding: 0.7em 0.3em;
+    text-align: center;
+}
+.ui-datepicker td {
+    border: 0 none;
+    padding: 1px;
+}
+.ui-datepicker td span, .ui-datepicker td a {
+    display: block;
+    padding: 0.2em;
+    text-align: right;
+    text-decoration: none;
+}
+.ui-datepicker .ui-datepicker-buttonpane {
+    background-image: none;
+    border-bottom: 0 none;
+    border-left: 0 none;
+    border-right: 0 none;
+    margin: 0.7em 0 0;
+    padding: 0 0.2em;
+}
+.ui-datepicker .ui-datepicker-buttonpane button {
+    cursor: pointer;
+    float: right;
+    margin: 0.5em 0.2em 0.4em;
+    overflow: visible;
+    padding: 0.2em 0.6em 0.3em;
+    width: auto;
+}
+.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current {
+    float: left;
+}
+.ui-tabs .ui-tabs-nav {
+    border-bottom: 0.2em solid #DDDDDD;
+    height: 2.2em;
+    list-style: none outside none;
+    padding: 0.2em 0.2em 0;
+    position: relative;
+}
+.ui-tabs .ui-tabs-nav li {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-bottom-width: 0 !important;
+    border-color: #DDDDDD;
+    border-left: 0.1em solid #DDDDDD;
+    border-right: 0.1em solid #DDDDDD;
+    border-style: solid;
+    border-top: 0.1em solid #DDDDDD;
+    float: left;
+    font-size: 0.9em;
+    height: 1.9em;
+    margin: 0.5em 0.2em -1px 0;
+    padding: 0;
+    position: relative;
+}
+.ui-tabs .ui-tabs-nav li a {
+    color: #DDDDDD;
+    float: left;
+    font-size: 0.9em;
+    padding: 0.5em 1em;
+    text-decoration: none;
+}
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: white;
+    border-color: #DDDDDD;
+    border-style: solid;
+    border-width: 0.2em 0.2em 0;
+    color: #000000;
+    font-size: 1em;
+    height: 2em;
+    margin-top: 0;
+    padding-top: 0.2em;
+}
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a {
+    color: #000000;
+    cursor: text;
+    font-weight: bold;
+}
+.ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-selected a {
+    color: #666666;
+    cursor: pointer;
+    font-weight: normal;
+}
+.ui-tabs .ui-tabs-hide {
+    display: none !important;
+}
+.ui-tabs li.ui-state-hover {
+    height: 2.4em;
+    margin-top: 0;
+}
+.tab {
+    clear: both;
+}
+ul.ui-tabs-nav li a.iconized {
+    background-position: 0.8em 0.6em;
+    padding-left: 2.4em;
+}

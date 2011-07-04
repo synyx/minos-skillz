@@ -2,50 +2,96 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.synyx.minos.modules</groupId>
-	<artifactId>org.synyx.minos.modules.skillz</artifactId>
+	<groupId>org.synyx</groupId>
+	<artifactId>skills</artifactId>
 	<packaging>war</packaging>
+	<version>0.1-SNAPSHOT</version>
+	<name>Synyx Skills</name>
+	<description>Synyx skill management</description>
 
-	<parent>
-		<groupId>org.synyx.minos.modules</groupId>
-		<artifactId>org.synyx.minos.modules</artifactId>
-		<version>2.0.0-SNAPSHOT</version>
-	</parent>
+    	<repositories>
+        	<repository>
+	        	<id>nexus.synyx.org</id>
+	        	<name>Synyx OpenSource Repository</name>
+	        	<url>http://repo.synyx.org</url>
+        	</repository>
 
-	<name>Minos Modules: Skillz</name>
-	<description>Skill management module</description>
+        	<repository>
+        		<id>codehaus</id>
+        		<url>http://repository.codehaus.org</url>
+        	</repository>
+    	</repositories>	
+
+	<properties>
+		<minos.version>2.0.1-SNAPSHOT</minos.version>
+		<junit.version>4.6</junit.version>
+		<jetty.version>6.1.20</jetty.version>
+		<jetty.port>8080</jetty.port>
+		<jetty.testport>7070</jetty.testport>
+	</properties>
+
+	<scm>
+		<url>http://svn.synyx.org/synyx/opensource/minos-skillz/trunk</url>
+		<connection>scm:svn:http://svn.synyx.org/synyx/opensource/minos-skillz/trunk</connection>
+		<developerConnection>scm:svn:https://svn.synyx.de/svn/synyx/opensource/minos-skillz/trunk</developerConnection>
+	</scm>
+
+	<distributionManagement>
+        	<repository>
+                	<id>releases.nexus.synyx.de</id>
+                	<url>http://nexus.synyx.de/content/repositories/releases</url>
+            	</repository>
+            	<snapshotRepository>
+               		<id>snapshots.nexus.synyx.de</id>
+               		<url>http://nexus.synyx.de/content/repositories/snapshots</url>
+        	</snapshotRepository>
+    	</distributionManagement>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.core</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.synyx.minos.modules</groupId>
+			<artifactId>org.synyx.minos.modules.core</artifactId>
+			<version>${minos.version}</version>
 			<type>war</type>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.core</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.synyx.minos.modules</groupId>
+			<artifactId>org.synyx.minos.modules.core</artifactId>
+			<version>${minos.version}</version>
 			<classifier>classes</classifier>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.core</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.synyx.minos.modules</groupId>
+			<artifactId>org.synyx.minos.modules.core</artifactId>
+			<version>${minos.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>${project.groupId}.test</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.synyx.minos.modules</groupId>
+			<artifactId>org.synyx.minos.modules.test</artifactId>
+			<version>${minos.version}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+	        	<groupId>junit</groupId>
+            		<artifactId>junit</artifactId>
+            		<version>${junit.version}</version>
+            		<scope>test</scope>
+        	</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -59,11 +105,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>offo.hyphenation</groupId>
 			<artifactId>fop-hyph</artifactId>
 			<version>0.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.sf.docbook</groupId>
 			<artifactId>docbook-xsl-saxon</artifactId>
@@ -75,6 +123,7 @@
 			<artifactId>velocity</artifactId>
 			<version>1.6.3</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity-tools</artifactId>
@@ -93,8 +142,8 @@
 					<artifactId>struts-tiles</artifactId>
 				</exclusion>
 			</exclusions>
-
 		</dependency>
+
 		<dependency>
 			<groupId>dom4j</groupId>
 			<artifactId>dom4j</artifactId>
@@ -104,15 +153,32 @@
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.1-beta-1</version>
 				<configuration>
+					<archiveClasses>true</archiveClasses>
+					<attachClasses>true</attachClasses>
+					<classesClassifier />
+
+					<excludes />
+
 					<overlays>
 						<overlay>
-							<groupId>${project.groupId}</groupId>
-							<artifactId>${project.groupId}.core</artifactId>
+							<groupId>org.synyx.minos.modules</groupId>
+							<artifactId>org.synyx.minos.modules.core</artifactId>
 							<excludes />
 						</overlay>
 					</overlays>
@@ -122,7 +188,104 @@
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>maven-jetty-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<contextPath>${project.artifactId}</contextPath>
+					<stopPort>8005</stopPort>
+					<stopKey>STOP</stopKey>
+					<connectors>
+						<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+							<port>${jetty.port}</port>
+						</connector>
+					</connectors>
+				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.4.3</version>
+				<configuration>
+					<excludes>
+						<exclude>**/acceptance/*Test.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>run-acceptance-tests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.4.3</version>
+						<executions>
+							<execution>
+								<id>acceptance-tests</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+								<configuration>
+									<useSystemClassLoader>false</useSystemClassLoader>
+									<skip>false</skip>
+									<excludes>
+										<exclude>none</exclude>
+									</excludes>
+									<includes>
+										<include>**/acceptance/*Test.java</include>
+									</includes>
+									<excludes>
+										<exclude>**/Abstract*Test.java</exclude>
+									</excludes>
+									<argLine>-Djetty.port=${jetty.testport}</argLine>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+
+				<pluginManagement>
+					<plugins>
+						<!-- Integrate Jetty as web server for integration tests -->
+						<plugin>
+							<groupId>org.mortbay.jetty</groupId>
+							<artifactId>maven-jetty-plugin</artifactId>
+							<version>${jetty.version}</version>
+							<executions>
+								<execution>
+									<id>start-jetty</id>
+									<phase>pre-integration-test</phase>
+									<goals>
+										<goal>run</goal>
+									</goals>
+									<configuration>
+										<daemon>true</daemon>
+										<connectors>
+											<connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+												<port>${jetty.testport}</port>
+											</connector>
+										</connectors>
+									</configuration>
+								</execution>
+								<execution>
+									<id>stop-jetty</id>
+									<phase>post-integration-test</phase>
+									<goals>
+										<goal>stop</goal>
+									</goals>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

@@ -6,7 +6,7 @@
 
 <%@ taglib prefix="core" tagdir="/WEB-INF/tags/core" %>
 
-<%@ attribute name="project" type="org.synyx.minos.skillz.domain.Project" %>
+<%@ attribute name="project" type="org.synyx.skills.domain.Project" %>
 <%@ attribute name="privateProject" type="java.lang.Boolean" required="false" %> 
 
 <c:choose>

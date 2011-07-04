@@ -7,7 +7,7 @@
 
 <%@ taglib prefix="minos" tagdir="/WEB-INF/tags/core" %>
 
-<%@ attribute name="matrix" type="org.synyx.minos.skillz.domain.SkillMatrix"%>
+<%@ attribute name="matrix" type="org.synyx.skills.domain.SkillMatrix"%>
 <%@ attribute name="levels" type="java.util.Collection"%>
 <%@ attribute name="editable" type="java.lang.Boolean" required="false"%>
 <%@ attribute name="id" type="java.lang.String"%>
