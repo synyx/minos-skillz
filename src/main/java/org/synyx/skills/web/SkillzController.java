@@ -41,6 +41,8 @@ import org.synyx.skills.web.validation.ProjectValidator;
 import org.synyx.minos.umt.service.UserManagement;
 
 import java.util.Locale;
+import javax.annotation.security.RolesAllowed;
+import org.synyx.skills.SkillzPermissions;
 
 
 /**
@@ -58,12 +60,17 @@ public class SkillzController {
     private static final String SKILLZ_PROJECTS = "/skillz#tabs-3";
     private static final String SKILLZ_LEVELS = "/skillz#tabs-4";
 
-    private final SkillManagement skillManagement;
-    private final UserManagement userManagement;
-    private final ProjectValidator projectValidator;
-    private final CategoryValidator categoryValidator;
-    private final MatrixTemplateValidator matrixTemplateValidator;
-    private final LevelValidator levelValidator;
+    private SkillManagement skillManagement = null;
+    private UserManagement userManagement = null;
+    private ProjectValidator projectValidator = null;
+    private CategoryValidator categoryValidator = null;
+    private MatrixTemplateValidator matrixTemplateValidator = null;
+    private LevelValidator levelValidator = null;
+
+    /**
+     * Standard constructor just for enabling AOP.
+     */
+    protected SkillzController() { }
 
     /**
      * Creates a new {@link SkillzController} instance.
@@ -96,6 +103,7 @@ public class SkillzController {
 
 
     @RequestMapping("/skillz/")
+    @RolesAllowed(SkillzPermissions.SKILLZ_ADMINISTRATION)
     public String index(Model model) {
 
         model.addAttribute("levels", skillManagement.getLevels());

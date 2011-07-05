@@ -39,7 +39,7 @@ public class SkillzMenuItemProvider extends AbstractMenuItemProvider {
     protected List<MenuItem> initMenuItems() {
 
         MenuItem skillzMenu = MenuItem.create(MENU_SKILLZ).withKeyBase("skillz.menu").withPosition(20).withUrl(
-                "/skillz").withPermission(SKILLZ_USER).build();
+                "/skillz/resume").withPermission(SKILLZ_USER).build();
 
         MenuItem manageResumes = MenuItem.create(MENU_SKILLZ_RESUMES_MANAGE).withKeyBase("skillz.menu.manageResumes")
             .withPosition(10).withUrl("/skillz/resumes").withPermission(SKILLZ_ADMINISTRATION).withParent(skillzMenu)
