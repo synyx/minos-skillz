@@ -421,6 +421,7 @@ public class SkillzController {
         }
 
         // validation was successful
+        saveProject(project, model);
 
         if (project.belongsTo(user)) {
             return UrlUtils.redirect(user.getUsername());
