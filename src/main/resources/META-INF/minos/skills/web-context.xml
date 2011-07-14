@@ -12,6 +12,8 @@
 	<bean class="org.synyx.skills.web.ResumeController" />
 	
 	<bean class="org.synyx.skills.web.ReferencesController" />
+
+        <bean class="org.synyx.skills.web.ProjectController" />
 	
 	<!-- Validators -->
         <bean id="projectValidator" class="org.synyx.skills.web.validation.ProjectValidator" />

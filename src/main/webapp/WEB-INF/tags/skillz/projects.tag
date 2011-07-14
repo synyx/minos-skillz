@@ -11,12 +11,10 @@
 
 <c:choose>
 	<c:when test="${privateProject}">
-		<c:set var="prefix" value="" />
-		<c:set var="username" value="${username}/" />
+		<c:set var="prefix" value="${username}/" />
 	</c:when>
 	<c:otherwise>
 		<c:set var="prefix" value="projects/" />
-		<c:set var="username" value="" />
 	</c:otherwise>
 </c:choose>
 
@@ -34,7 +32,7 @@
 	<display:footer>
 		<tr>
 			<td>
-				<core:imageLink href="${prefix}${username}form" imageUrl="/images/umt/user_add.png" altKey="skillz.project.new" />
+				<core:imageLink href="${prefix}form" imageUrl="/images/umt/user_add.png" altKey="skillz.project.new" />
 			</td>
 		</tr>
 	</display:footer>

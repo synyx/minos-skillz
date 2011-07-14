@@ -23,15 +23,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import org.synyx.minos.core.Core;
-import org.synyx.minos.core.domain.User;
-import org.synyx.minos.core.web.CurrentUser;
 import org.synyx.minos.core.web.DateTimeEditor;
 import org.synyx.minos.core.web.Message;
 import org.synyx.minos.core.web.UrlUtils;
 import org.synyx.skills.domain.Category;
 import org.synyx.skills.domain.Level;
 import org.synyx.skills.domain.MatrixTemplate;
-import org.synyx.skills.domain.Project;
 import org.synyx.skills.domain.Skill;
 import org.synyx.skills.service.SkillManagement;
 import org.synyx.skills.web.validation.CategoryValidator;
@@ -42,6 +39,7 @@ import org.synyx.minos.umt.service.UserManagement;
 
 import java.util.Locale;
 import javax.annotation.security.RolesAllowed;
+import org.synyx.minos.core.security.AuthenticationService;
 import org.synyx.skills.SkillzPermissions;
 
 
@@ -57,8 +55,9 @@ public class SkillzController {
 
     private static final String SKILLZ_CATEGORIES = "/skillz#tabs-1";
     private static final String SKILLZ_TEMPLATES = "/skillz#tabs-2";
-    private static final String SKILLZ_PROJECTS = "/skillz#tabs-3";
     private static final String SKILLZ_LEVELS = "/skillz#tabs-4";
+
+    private AuthenticationService authenticationService;
 
     private SkillManagement skillManagement = null;
     private UserManagement userManagement = null;
@@ -76,10 +75,11 @@ public class SkillzController {
      * Creates a new {@link SkillzController} instance.
      */
     @Autowired
-    public SkillzController(SkillManagement skillManagement, UserManagement userManagement,
+    public SkillzController(AuthenticationService authenticationService, SkillManagement skillManagement, UserManagement userManagement,
         ProjectValidator projectValidator, CategoryValidator categoryValidator,
         MatrixTemplateValidator matrixTemplateValidator, LevelValidator levelValidator) {
 
+        this.authenticationService = authenticationService;
         this.skillManagement = skillManagement;
         this.userManagement = userManagement;
         this.projectValidator = projectValidator;
@@ -310,191 +310,6 @@ public class SkillzController {
 
         return UrlUtils.redirect(SKILLZ_TEMPLATES);
     }
-
-
-    // Manage projects
-
-    @RequestMapping(value = { "/skillz/projects/{usernameOrFormString:[a-zA-Z_]\\w*}" }, method = GET)
-    public String project(@PathVariable("usernameOrFormString") String usernameOrFormString, Model model) {
-
-        if (usernameOrFormString.equals("form")) {
-            return createOrEditProject(null, model);
-        }
-
-        return showUserProjects(usernameOrFormString, model);
-    }
-
-
-    public String showUserProjects(@PathVariable("username") String username, Model model) {
-
-        User user = userManagement.getUser(username);
-        model.addAttribute("projects", skillManagement.getPrivateProjectsFor(user));
-        model.addAttribute("projectsUrl", "/skillz/projects/" + username);
-        model.addAttribute("username", username);
-
-        return "skillz/projects";
-    }
-
-
-    @RequestMapping(value = { "/skillz/projects/{id:\\d+}" }, method = GET)
-    public String createOrEditProject(@PathVariable("id") Project project, Model model) {
-
-        model.addAttribute("project", null == project ? BeanUtils.instantiateClass(Project.class) : project);
-        model.addAttribute("projects", skillManagement.getPublicProjects());
-        model.addAttribute("skills", skillManagement.getSkills());
-
-        return "skillz/project";
-    }
-
-
-    /**
-     * Shows the form for a private project.
-     *
-     * @param project
-     * @param model
-     * @param user
-     * @return
-     */
-    @RequestMapping(value = { "/skillz/projects/{username:[a-zA-Z_]\\w*}/form" }, method = GET)
-    public String privateProjectForm(@RequestParam(value = "id", required = false) Project project, Model model,
-        @CurrentUser User user) {
-
-        if (null == project) {
-            project = BeanUtils.instantiateClass(Project.class);
-        } else {
-            if (!project.belongsTo(user)) {
-                model.addAttribute(Core.MESSAGE, "skillz.project.id.invalid");
-
-                return UrlUtils.redirect("/skillz/projects/private");
-            }
-        }
-
-        model.addAttribute("project", project);
-        model.addAttribute("owner", user);
-        model.addAttribute("skills", skillManagement.getSkills());
-
-        return "skillz/project";
-    }
-
-
-    /**
-     * Saves a new public project.
-     *
-     * @param project
-     * @param errors
-     * @param model
-     * @param user
-     * @return
-     */
-    @RequestMapping(value = "/skillz/projects", method = POST)
-    public String saveNewPublicProject(@ModelAttribute("project") Project project, Errors errors, Model model,
-        @CurrentUser User user) {
-
-        return savePublicProject(project, errors, model, user);
-    }
-
-
-    /**
-     * Saves a existing project (aka update).
-     *
-     * @param project
-     * @param errors
-     * @param model
-     * @param user
-     * @return
-     */
-    @RequestMapping(value = "/skillz/projects/{id:\\d+}", method = PUT)
-    public String saveExistingPublicProject(@ModelAttribute("project") Project project, Errors errors, Model model,
-        @CurrentUser User user) {
-
-        return savePublicProject(project, errors, model, user);
-    }
-
-
-    private String savePublicProject(Project project, Errors errors, Model model, User user) {
-
-        // validate project
-        projectValidator.validate(project, errors);
-
-        if (errors.hasErrors()) {
-            return "skillz/project";
-        }
-
-        // validation was successful
-        saveProject(project, model);
-
-        if (project.belongsTo(user)) {
-            return UrlUtils.redirect(user.getUsername());
-        }
-
-        return UrlUtils.redirect(SKILLZ_PROJECTS);
-    }
-
-
-    /**
-     * Saves a private project.
-     *
-     * @param project
-     * @param errors
-     * @param model
-     * @param user
-     * @return
-     */
-    @RequestMapping(value = { "/skillz/projects/{username:[a-zA-Z_]\\w*}" }, method = POST)
-    public String savePrivateProject(@ModelAttribute("project") Project project, Errors errors, Model model,
-        @CurrentUser User user) {
-
-        // validate project
-        projectValidator.validate(project, errors);
-
-        if (errors.hasErrors()) {
-            model.addAttribute("owner", user);
-
-            return "skillz/project";
-        }
-
-        saveProject(project, model);
-
-        return UrlUtils.redirect("../projects/" + project.getOwner().getUsername());
-    }
-
-
-    /**
-     * Invokes the service layer to save the given project.
-     *
-     * @param project
-     * @param model
-     */
-    private void saveProject(Project project, Model model) {
-
-        project = skillManagement.save(project);
-
-        model.addAttribute(Core.MESSAGE, Message.success("skillz.project.save.success", project.getName()));
-    }
-
-
-    /**
-     * Deletes a project.
-     *
-     * @param project
-     * @param model
-     * @param user
-     * @return
-     */
-    @RequestMapping(value = "/skillz/projects/{id:\\d+}", method = DELETE)
-    public String deleteProject(@PathVariable("id") Project project, Model model, @CurrentUser User user) {
-
-        skillManagement.delete(project);
-
-        model.addAttribute(Core.MESSAGE, Message.success("skillz.project.delete.success", project.getName()));
-
-        if (project.belongsTo(user)) {
-            return UrlUtils.redirect("./" + user.getUsername());
-        }
-
-        return UrlUtils.redirect(SKILLZ_PROJECTS);
-    }
-
 
     // Manage levels
 

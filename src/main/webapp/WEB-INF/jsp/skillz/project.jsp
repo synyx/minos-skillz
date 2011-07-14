@@ -9,13 +9,13 @@
 
 <h2>
 	<core:choose>
-		<core:when test="${empty owner}">
+		<core:when test="${project.owner == null}">
 			<spring:message code="skillz.project" />
 			<core:set var="action" value="/web/skillz/projects" />
 		</core:when>
 		<core:otherwise>
 			<spring:message code="skillz.project.private" />
-			<core:set var="action" value="/web/skillz/projects/${owner.username}" />
+			<core:set var="action" value="/web/skillz/projects/user/${project.owner.username}" />
 		</core:otherwise>
 	</core:choose>
 </h2>
@@ -57,10 +57,8 @@
 		<tfoot>
 			<tr>
 				<td>
-					<core:if test="${not empty owner}">
-						<input type="hidden" name="owner" id="owner" value="${owner.id}" />
-					</core:if>
 					<form:hidden path="id" />
+                                        <form:hidden path="owner" />
 					<input type="submit" value="<spring:message code="core.ui.ok" />" />
 					<a href="../../skillz#tabs-3"><spring:message code="core.ui.cancel" /></a>
 				</td>

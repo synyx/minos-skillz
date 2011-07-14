@@ -51,7 +51,7 @@ public class SkillzMenuItemProvider extends AbstractMenuItemProvider {
         MenuItem resume = MenuItem.create(MENU_SKILLZ_RESUME).withKeyBase("skillz.menu.resume").withPosition(40)
             .withUrl("/skillz/resume").withPermission(SKILLZ_USER).withParent(skillzMenu).build();
 
-        UrlResolver privateProjectsStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/projects/%s",
+        UrlResolver privateProjectsStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/projects/user/%s",
                     UserPlaceholderAwareUrlResolver.DEFAULT_PLACEHOLDER), authenticationService);
         MenuItem privateProjects = MenuItem.create(MENU_SKILLZ_PRIVATEPROJECTS).withKeyBase(
                 "skillz.menu.projects.private").withPosition(50).withUrlResolver(privateProjectsStrategy)
