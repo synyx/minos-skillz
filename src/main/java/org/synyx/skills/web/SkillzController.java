@@ -1,5 +1,6 @@
 package org.synyx.skills.web;
 
+import java.util.Arrays;
 import org.joda.time.DateMidnight;
 
 import org.springframework.beans.BeanUtils;
@@ -39,8 +40,11 @@ import org.synyx.minos.umt.service.UserManagement;
 
 import java.util.Locale;
 import javax.annotation.security.RolesAllowed;
+import org.synyx.minos.core.domain.User;
 import org.synyx.minos.core.security.AuthenticationService;
+import org.synyx.minos.core.web.CurrentUser;
 import org.synyx.skills.SkillzPermissions;
+import org.synyx.skills.service.SkillsAuthenticationServiceWrapper;
 
 
 /**
@@ -96,9 +100,15 @@ public class SkillzController {
 
 
     @RequestMapping("/skillz")
-    public String indexRedirect() {
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    public String indexRedirect(@CurrentUser User currentUser) {
 
-        return UrlUtils.redirect("/skillz/");
+        if (authenticationService.hasAnyPermission(Arrays.asList(SkillzPermissions.SKILLZ_ADMINISTRATION))) {
+
+            return UrlUtils.redirect("/skillz/");
+        }
+
+        return UrlUtils.redirect("/skillz/user/" + currentUser.getUsername() + "/resume");
     }
 
 

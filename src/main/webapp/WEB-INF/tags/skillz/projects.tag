@@ -11,10 +11,10 @@
 
 <c:choose>
 	<c:when test="${privateProject}">
-		<c:set var="prefix" value="${username}/" />
+            <c:set var="prefix" value="/web/skillz/user/${username}/projects/" />
 	</c:when>
 	<c:otherwise>
-		<c:set var="prefix" value="projects/" />
+            <c:set var="prefix" value="/web/skillz/projects/" />
 	</c:otherwise>
 </c:choose>
 

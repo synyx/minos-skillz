@@ -1,10 +1,8 @@
 package org.synyx.skills.web;
 
-import java.util.Arrays;
 import javax.annotation.security.RolesAllowed;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -18,7 +16,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 import org.synyx.minos.core.Core;
 import org.synyx.minos.core.domain.User;
-import org.synyx.minos.core.security.AuthenticationService;
 import org.synyx.minos.core.web.CurrentUser;
 import org.synyx.minos.core.web.Message;
 import org.synyx.minos.core.web.UrlUtils;
@@ -27,6 +24,7 @@ import org.synyx.skills.SkillzPermissions;
 
 import org.synyx.skills.domain.Project;
 import org.synyx.skills.service.SkillManagement;
+import org.synyx.skills.service.SkillsAuthenticationServiceWrapper;
 import org.synyx.skills.web.validation.ProjectValidator;
 
 /**
@@ -39,10 +37,9 @@ public class ProjectController {
 
     private static final String SKILLS_PUBLIC_PROJECTS = "/skillz#tabs-3";
 
-    private AuthenticationService authenticationService;
+    private SkillsAuthenticationServiceWrapper authenticationService = null;
 
     private SkillManagement skillManagement = null;
-    private UserManagement userManagement = null;
     private ProjectValidator projectValidator = null;
 
     /**
@@ -59,10 +56,9 @@ public class ProjectController {
      * @param authenticationService
      */
     @Autowired
-    public ProjectController(SkillManagement skillManagement, UserManagement userManagement, ProjectValidator projectValidator, AuthenticationService authenticationService) {
+    public ProjectController(SkillManagement skillManagement, ProjectValidator projectValidator, SkillsAuthenticationServiceWrapper authenticationService) {
 
         this.skillManagement = skillManagement;
-        this.userManagement = userManagement;
         this.projectValidator = projectValidator;
         this.authenticationService = authenticationService;
     }
@@ -76,18 +72,10 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}" }, method = GET)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects" }, method = GET)
     public String privateProjectList(@PathVariable("username") String username, Model model, @CurrentUser User currentUser) {
 
-        // only admin may list other users private projects
-        if (!currentUser.getUsername().equals(username)) {
-            // listing for other user than currently logged in user
-            if (!authenticationService.hasAllPermissions(Arrays.asList(SkillzPermissions.SKILLZ_ADMINISTRATION))) {
-                throw new AccessDeniedException("Only administrator may list another users private projects.");
-            }
-        }
-
-        User user = userManagement.getUser(username);
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
 
         model.addAttribute("projects", skillManagement.getPrivateProjectsFor(user));
         model.addAttribute("username", username);
@@ -106,23 +94,10 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}/{id:\\d+}" }, method = GET)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects/{id:\\d+}" }, method = GET)
     public String privateProjectCreateOrEdit(@PathVariable("username") String username, @PathVariable("id") Project project, Model model, @CurrentUser User currentUser) {
 
-        // only admin may create/edit projects of other users
-        if (!currentUser.getUsername().equals(username)) {
-            // other user than currently logged in user
-            if (!authenticationService.hasAllPermissions(Arrays.asList(SkillzPermissions.SKILLZ_ADMINISTRATION))) {
-                throw new AccessDeniedException("Only administrator may create/edit another users private projects.");
-            }
-        }
-
-        // determine chosen user (user to create/edit project for)
-        User user = userManagement.getUser(username);
-        if (null == user) {
-
-            throw new IllegalArgumentException("Chosen user does not exist.");
-        }
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
 
         // if editing existing project, check if the chosen (via path, not necessarily equal to the logged in) user
         // is the owner of that project
@@ -152,7 +127,7 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}/form" }, method = GET)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects/form" }, method = GET)
     public String privateProjectForm(@PathVariable("username") String username, Model model, @CurrentUser User currentUser) {
 
         return privateProjectCreateOrEdit(username, null, model, currentUser);
@@ -169,18 +144,18 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}" }, method = POST)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects" }, method = POST)
     public String saveNewPrivateProject(@PathVariable("username") String username, @ModelAttribute("project") Project project, Errors errors, Model model, @CurrentUser User currentUser) {
 
         // Note: If you're editing this, keep in mind that saveExistingPrivateProject(..)
         // delegates to this method (just added for different request mapping)
 
         // only admin may save a new  project for other users
-        if (!currentUser.getUsername().equals(username)) {
-            // other user than currently logged in user
-            if (!authenticationService.hasAllPermissions(Arrays.asList(SkillzPermissions.SKILLZ_ADMINISTRATION))) {
-                throw new AccessDeniedException("Only administrator may save a private project for other users.");
-            }
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        if (!project.belongsTo(user)) {
+
+            throw new IllegalArgumentException("Project to save does not belong to chosen user.");
         }
 
         // validate project
@@ -193,7 +168,7 @@ public class ProjectController {
 
         saveProject(project, model);
 
-        return UrlUtils.redirect("/web/skillz/projects/user/" + project.getOwner().getUsername());
+        return UrlUtils.redirect("/web/skillz/user/" + project.getOwner().getUsername() +"/projects");
     }
 
     /**
@@ -207,7 +182,7 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}/{id:\\d+}" }, method = PUT)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects/{id:\\d+}" }, method = PUT)
     public String saveExistingPrivateProject(@PathVariable("username") String username, @ModelAttribute("project") Project project, Errors errors, Model model, @CurrentUser User currentUser) {
 
         return saveNewPrivateProject(username, project, errors, model, currentUser);
@@ -223,23 +198,10 @@ public class ProjectController {
      * @return
      */
     @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
-    @RequestMapping(value = { "/skillz/projects/user/{username:[a-zA-Z_]\\w*}/{id:\\d+}" }, method = DELETE)
+    @RequestMapping(value = { "/skillz/user/{username:[a-zA-Z_]\\w*}/projects/{id:\\d+}" }, method = DELETE)
     public String deletePrivateProject(@PathVariable("username") String username, @PathVariable("id") Project project, Model model, @CurrentUser User currentUser) {
 
-        // only admin may delete  projects for other users
-        if (!currentUser.getUsername().equals(username)) {
-            // other user than currently logged in user
-            if (!authenticationService.hasAllPermissions(Arrays.asList(SkillzPermissions.SKILLZ_ADMINISTRATION))) {
-                throw new AccessDeniedException("Only administrator may delete a private project for other users.");
-            }
-        }
-
-        // determine chosen user (user to create/edit project for)
-        User user = userManagement.getUser(username);
-        if (null == user) {
-
-            throw new IllegalArgumentException("Chosen user does not exist.");
-        }
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
 
         // check if project exists and belongs to designated user
         if (null == project || !project.belongsTo(user)) {
@@ -251,7 +213,7 @@ public class ProjectController {
 
         model.addAttribute(Core.MESSAGE, Message.success("skillz.project.delete.success", project.getName()));
 
-        return UrlUtils.redirect("/web/skillz/projects/user/" + project.getOwner().getUsername());
+        return UrlUtils.redirect("/web/skillz/user/" + project.getOwner().getUsername() + "/projects");
     }
 
 

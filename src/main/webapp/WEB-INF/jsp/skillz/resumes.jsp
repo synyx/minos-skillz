@@ -30,11 +30,13 @@
 
 <form:form method="post">
 <display:table id="resume" name="resumes" requestURI="resumes" >
+        <spring:url var="resumeUrl" value="/web/skillz/user/${resume.subject.username}/resume" />
+
 	<minos:column class="checkbox" style="width: 1%">
 		<input type="checkbox" name="resumes" value="${resume.id}" />
 	</minos:column>
 	<minos:column titleKey="name" sortProperty="resume.subject.lastname">
-		<a href="resumes/${resume.id}">${resume.subject.lastname}, ${resume.subject.firstname}</a>
+		<a href="${resumeUrl}">${resume.subject.lastname}, ${resume.subject.firstname}</a>
 	</minos:column>
 	<minos:column property="position" titleKey="skillz.resume.position" />
 	<minos:column property="lastModifiedDate" class="date" />
@@ -43,7 +45,7 @@
 		${resume.skillz.template.name}
 	</minos:column>
 	<minos:column class="actions">
-		<a href="resumes/${resume.id}"><img src="<c:url value="/images/skillz/resume_edit.png" />" alt="Edit" /></a>
+            <a href="${resumeUrl}"><img src="<c:url value="/images/skillz/resume_edit.png" />" alt="Edit" /></a>
 	</minos:column>
 	<display:footer>
 		<tr>

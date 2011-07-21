@@ -57,7 +57,6 @@ import org.synyx.skills.service.ResumeAdminstration;
 import org.synyx.skills.service.ResumeManagement;
 import org.synyx.skills.service.ResumeZipCreator;
 import org.synyx.skills.service.SkillManagement;
-import org.synyx.skills.service.ZipCreationException;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,10 +69,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import javax.annotation.security.RolesAllowed;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.synyx.minos.umt.service.UserManagement;
+import org.synyx.skills.SkillzPermissions;
+import org.synyx.skills.service.SkillsAuthenticationServiceWrapper;
 
 
 /**
@@ -89,27 +93,27 @@ public class ResumeController {
 
     private static final Log LOG = LogFactory.getLog(ResumeController.class);
 
-    private static final String RESUME = "/skillz/resume";
-
-    private static final String RESUMES = "/skillz/resumes";
-
     private static final int THUMBNAIL_WIDTH = 200;
 
-    private final SkillManagement skillManagement;
+    private SkillsAuthenticationServiceWrapper authenticationService = null;
 
-    private final ResumeManagement resumeManagement;
-
-    private final ResumeAdminstration resumeAdminstration;
+    private SkillManagement skillManagement = null;
+    private ResumeManagement resumeManagement = null;
+    private ResumeAdminstration resumeAdminstration = null;
 
     @Qualifier("pdfDocbookCreator")
-    private final PdfDocbookCreator pdfDocbookCreator;
-
-    private final ResumeZipCreator resumeZipCreator;
-
+    private PdfDocbookCreator pdfDocbookCreator = null;
     @Qualifier("pdfDocbookCreatorAnonymous")
-    private final PdfDocbookCreator pdfDocbookCreatorAnonymous;
+    private PdfDocbookCreator pdfDocbookCreatorAnonymous = null;
+
+    private ResumeZipCreator resumeZipCreator = null;
 
     private MultipartFileValidator multipartValidator = new MultipartFileValidator();
+
+    /**
+     * Standard constructor just for enabling AOP.
+     */
+    protected ResumeController() { }
 
     /**
      * Creates a new {@link ResumeController}.
@@ -121,10 +125,11 @@ public class ResumeController {
      * @param resumeZipCreator
      */
     @Autowired
-    public ResumeController(ResumeManagement resumeManagement, SkillManagement skillManagement,
-        ResumeAdminstration resumeAdminstration, PdfDocbookCreator pdfDocbookCreator, ResumeZipCreator resumeZipCreator,
-        PdfDocbookCreator pdfDocbookCreatorAnonymous) {
+    public ResumeController(SkillsAuthenticationServiceWrapper authenticationService, ResumeManagement resumeManagement,
+            SkillManagement skillManagement, ResumeAdminstration resumeAdminstration, PdfDocbookCreator pdfDocbookCreator,
+            ResumeZipCreator resumeZipCreator, PdfDocbookCreator pdfDocbookCreatorAnonymous) {
 
+        this.authenticationService = authenticationService;
         this.skillManagement = skillManagement;
         this.resumeManagement = resumeManagement;
         this.resumeAdminstration = resumeAdminstration;
@@ -181,148 +186,158 @@ public class ResumeController {
 
 
     /**
-     * Show the current {@link User}'s {@link Resume}.
+     * Show a {@link User}'s {@link Resume}. Only admin may show the resume of
+     * another user.
      *
+     * @param username
      * @param model
-     * @param user
      * @return
      */
-    @RequestMapping(value = RESUME, method = GET)
-    public String resume(Model model, @CurrentUser User user) {
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume", method = GET)
+    public String resume(@PathVariable("username") String username, Model model) {
+
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        Resume resume = resumeManagement.getResume(user);
 
         model.addAttribute("owner", user);
+        model.addAttribute("filters", resumeManagement.getResumeAttributeFilters());
+        model.addAttribute("resume", resume);
+        model.addAttribute("levels", skillManagement.getLevels());
 
-        return showResume(resumeManagement.getResume(user), model);
+        return "skillz/resume";        
     }
 
 
     /**
-     * Creates the current {@link User}'s {@link Resume} as a PDF file in a temporary directory and redirects to it if
-     * the creation was successful, show an error message otherwise.
+     * Creates a {@link User}'s {@link Resume} as a PDF file in a temporary directory and streams it
+     * to the response.
      *
-     * @param user
+     * Only admin may generate PDFs of another user's resume.
+     *
+     * @param username
      * @param response
-     * @param webRequest
+     * @param session
      * @param outputStream
-     * @return
+     * @param webRequest
      */
-    @RequestMapping(value = RESUME, method = POST, params = "pdfexport")
-    public String resumePdf(@CurrentUser User user, Model model, HttpSession session, WebRequest webRequest) {
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume", method = GET, params = "pdf")
+    public void resumePdf(@PathVariable("username") String username, HttpServletResponse response, HttpSession session,
+            OutputStream outputStream, WebRequest webRequest) {
 
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        // generate resume pdf file
         File file = null;
-
         try {
             file = pdfDocbookCreator.createTempPdfFile(getServletTempDirectory(session.getServletContext()),
                     resumeManagement.getFilteredResume(user, getResumeAttributeFilters(webRequest)),
                     skillManagement.getLevels());
-        } catch (DocbookCreationException e) {
-            model.addAttribute(Core.MESSAGE, Message.error("skillz.resume.export.pdf.failed"));
-            LOG.error("Failed to create a pdf.", e);
+        } catch (DocbookCreationException ex) {
 
-            return resume(model, user);
+            throw new RuntimeException("Failed to create a pdf.", ex);
         }
 
-        return UrlUtils.redirect("/skillz/resume/pdf/" + file.getName());
+        // stream file to response
+        response.setContentType("application/pdf");
+        response.setHeader("Content-disposition", "attachment; filename=resume.pdf");
+
+        try {
+            streamFile(session.getServletContext(), file.getName(), outputStream);
+        } catch (IOException ex) {
+
+            throw new RuntimeException("Failed stream pdf file to response.", ex);
+        }
     }
 
 
     /**
-     * Creates the current {@link User}'s {@link Resume} as a PDF file in a temporary directory and redirects to it if
-     * the creation was successful, show an error message otherwise.
+     * Creates a {@link User}'s {@link Resume} as a PDF file (anonymized form) in a temporary directory
+     * and streams it to the response.
      *
-     * @param user
+     * Only admin may generate PDFs of another user's resume.
+     *
+     * @param username
      * @param response
-     * @param webRequest
+     * @param session
      * @param outputStream
+     * @param webRequest
      * @return
      */
-    @RequestMapping(value = RESUME, method = POST, params = "pdfexportanonymous")
-    public String resumePdfAnonymous(@CurrentUser User user, Model model, HttpSession session, WebRequest webRequest) {
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume", method = GET, params = "pdfanonymous")
+    public void resumePdfAnonymous(@PathVariable("username") String username, HttpServletResponse response,
+            HttpSession session, OutputStream outputStream, WebRequest webRequest) {
 
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        // generate resume pdf file
         File file = null;
-
         try {
             file = pdfDocbookCreatorAnonymous.createTempPdfFile(getServletTempDirectory(session.getServletContext()),
                     resumeManagement.getFilteredResume(user, getResumeAttributeFilters(webRequest)),
                     skillManagement.getLevels());
-        } catch (DocbookCreationException e) {
-            model.addAttribute(Core.MESSAGE, Message.error("skillz.resume.export.pdf.failed"));
-            LOG.error("Failed to create a pdf.", e);
+        } catch (DocbookCreationException ex) {
 
-            return resume(model, user);
+            throw new RuntimeException("Failed to create a pdf.", ex);
         }
 
-        return UrlUtils.redirect("/skillz/resume/pdf/" + file.getName());
-    }
-
-
-    /**
-     * Stream's the {@link Resume} with the given file name as PDF.
-     *
-     * @param filename
-     * @param response
-     * @param session
-     * @param outputStream
-     * @throws IOException
-     */
-    @RequestMapping(value = "/skillz/resume/pdf/{filename}", method = GET)
-    public void streamResumePdf(@PathVariable("filename") String filename, HttpServletResponse response,
-        HttpSession session, OutputStream outputStream) throws IOException {
-
+        // stream file to response
         response.setContentType("application/pdf");
         response.setHeader("Content-disposition", "attachment; filename=resume.pdf");
 
-        streamFile(session.getServletContext(), filename, outputStream);
+        try {
+            streamFile(session.getServletContext(), file.getName(), outputStream);
+        } catch (IOException ex) {
+
+            throw new RuntimeException("Failed stream pdf file to response.", ex);
+        }
     }
 
 
     /**
-     * Creates the current {@link User}'s {@link Resume} as as a ZIP file in a temporary directory and redirects to it
-     * if the creation was successful, show an error message otherwise.
+     * Creates the current {@link User}'s {@link Resume} as as a ZIP file in a temporary directory
+     * and streams it to the response.
      *
-     * @param user
+     * Only admin may generate ZIPs of another user's resume.
+     *
+     * @param username
      * @param response
-     * @param webRequest
+     * @param session
      * @param outputStream
+     * @param webRequest
      * @return
      */
-    @RequestMapping(value = RESUME, method = POST, params = "zipexport")
-    public String resumeZip(@CurrentUser User user, Model model, HttpSession session, WebRequest webRequest) {
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume", method = GET, params = "zip")
+    public void resumeZip(@PathVariable("username") String username, HttpServletResponse response,
+            HttpSession session, OutputStream outputStream, WebRequest webRequest) {
 
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        // generate resume pdf file
         File file = null;
-
         try {
             file = resumeZipCreator.createTempZipFile(getServletTempDirectory(session.getServletContext()),
                     resumeManagement.getFilteredResume(user, getResumeAttributeFilters(webRequest)),
                     skillManagement.getLevels());
-        } catch (ZipCreationException e) {
-            model.addAttribute(Core.MESSAGE, Message.error("skillz.resume.export.zip.failed"));
-            LOG.error("Failed to create a zip.", e);
+        } catch (DocbookCreationException ex) {
 
-            return resume(model, user);
+            throw new RuntimeException("Failed to create a zip.", ex);
         }
 
-        return UrlUtils.redirect("/skillz/resume/zip/" + file.getName());
-    }
-
-
-    /**
-     * Stream's the {@link Resume} with the given file name as ZIP.
-     *
-     * @param filename
-     * @param session
-     * @param response
-     * @param outputStream
-     * @throws IOException
-     */
-    @RequestMapping(value = "/skillz/resume/zip/{filename}", method = GET)
-    public void streamResumeZip(@PathVariable("filename") String filename, HttpSession session,
-        HttpServletResponse response, OutputStream outputStream) throws IOException {
-
+        // stream file to response
         response.setContentType("application/zip");
-        response.setHeader("content-disposition", "attachment; filename=resume.zip");
+        response.setHeader("Content-disposition", "attachment; filename=resume.zip");
 
-        streamFile(session.getServletContext(), filename, outputStream);
+        try {
+            streamFile(session.getServletContext(), file.getName(), outputStream);
+        } catch (IOException ex) {
+
+            throw new RuntimeException("Failed stream zip file to response.", ex);
+        }
     }
 
 
@@ -386,24 +401,26 @@ public class ResumeController {
 
     // Skillz administration
 
-    @RequestMapping(value = "/skillz/resumes/{id}", method = GET)
-    public String resume(@PathVariable("id") Long id, Model model) {
-
-        return showResume(resumeManagement.getResume(id), model);
-    }
-
-
     /**
-     * Saves a resume instance.
+     * Saves a resume instance. Only admin may save another user's resume.
      *
      * @param resume
      * @param model
      * @param conversation
+     * @param username
      * @return
      */
-    @RequestMapping(value = "/skillz/resumes/{id}", method = PUT)
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume", method = PUT)
     public String saveResume(@ModelAttribute("resume") Resume resume, Model model, SessionStatus conversation,
-        @CurrentUser User user) {
+        @PathVariable("username") String username) {
+
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        if (!user.equals(resume.getSubject())) {
+
+            throw new IllegalArgumentException("Resume does not belong to chosen user.");
+        }
 
         resumeManagement.save(resume);
 
@@ -411,35 +428,62 @@ public class ResumeController {
         conversation.setComplete();
 
         if (resume.getSubject().equals(user)) {
-            return UrlUtils.redirect(RESUME);
+            return UrlUtils.redirect("/skillz/user/" + user.getUsername() + "/resume");
         } else {
-            return UrlUtils.redirect(RESUMES);
+            return UrlUtils.redirect("/skillz/resumes");
         }
     }
 
+    /**
+     * Get a users resume photo. Only admin may get the photo of another user's resume.
+     *
+     * @param username
+     * @param outputStream
+     * @throws IOException
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume/photo", method = GET)
+    public void showResumePhoto(@PathVariable("username") String username, OutputStream outputStream) throws IOException {
 
-    @RequestMapping(value = "/skillz/resumes/{id}/photo", method = GET)
-    public void showResumePhoto(@PathVariable("id") Long id, OutputStream outputStream) throws IOException {
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
 
-        Resume resume = resumeManagement.getResume(id);
+        Resume resume = resumeManagement.getResume(user);
 
         if (resume.getPhoto() != null) {
             FileCopyUtils.copy(resume.getPhoto().getThumbnail(), outputStream);
         }
     }
 
-
+    /**
+     * Upload a photo to a user's resume. Only admin may upload a photo to another
+     * user's resume.
+     *
+     * @param username
+     * @param errors
+     * @param model
+     * @param image
+     * @return
+     * @throws IOException
+     */
     // TODO: Use only PUT request. Doesn't work currently with multipart
     // requests. See https://jira.springsource.org/browse/SPR-6594
-    @RequestMapping(value = "/skillz/resumes/{id}/photo", method = { POST, PUT })
-    public String saveResumePhoto(@ModelAttribute("resume") Resume resume, Errors errors, Model model,
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume/photo", method = { POST, PUT })
+    public String saveResumePhoto(@PathVariable("username") String username, Model model,
         @RequestParam("photoBinary") MultipartFile image) throws IOException {
 
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        Resume resume = resumeManagement.getResume(user);
+
+        Errors errors = new BeanPropertyBindingResult(resume, Resume.class.getName());
         multipartValidator.validate(image, errors);
 
         if (errors.hasErrors()) {
             model.addAttribute(Core.MESSAGE, Message.error(errors.getGlobalError().getCode()));
         } else {
+            
+
             String fileExtension = StringUtils.getFilenameExtension(image.getOriginalFilename());
             resume.setPhoto(new Image(image.getBytes(), THUMBNAIL_WIDTH, fileExtension));
             resumeManagement.save(resume);
@@ -447,29 +491,47 @@ public class ResumeController {
             model.addAttribute(Core.MESSAGE, Message.success("skillz.resume.photo.save.success"));
         }
 
-        return UrlUtils.redirect(RESUME);
+        return UrlUtils.redirect("/skillz/user/" + user.getUsername() + "/resume");
     }
 
+    /**
+     * Delete a user's resume photo. Only admin may delete another user's resume photo.
+     * 
+     * @param username
+     * @param model
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/resume/photo", method = DELETE)
+    public String deleteResumePhoto(@PathVariable("username") String username, Model model) {
 
-    @RequestMapping(value = "/skillz/resumes/{id}/photo", method = DELETE)
-    public String deleteResumePhoto(@PathVariable("id") Resume resume, Model model) {
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
 
+        Resume resume = resumeManagement.getResume(user);
         resume.setPhoto(null);
         resumeManagement.save(resume);
 
         model.addAttribute(Core.MESSAGE, Message.success("skillz.resume.photo.delete.success"));
 
-        return UrlUtils.redirect(RESUME);
+        return UrlUtils.redirect("/skillz/user/" + user.getUsername() + "/resume");
     }
 
-
-    @RequestMapping(value = RESUMES, method = GET)
+    /**
+     * Show a list of all resumes. Only admin may do that.
+     *
+     * @param model
+     * @param pageable
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/resumes", method = GET)
     public String resumes(Model model, Pageable pageable) {
 
         Page<Resume> resumes = resumeAdminstration.getResumes(pageable);
         model.addAttribute("resumes", PageWrapper.wrap(resumes));
         model.addAttribute("templates", skillManagement.getTemplates());
 
+        // if no filter is selected, preselect the first one
         if (!model.containsAttribute("resumeFilter") && !resumeAdminstration.getResumeFilters().isEmpty()) {
             ResumeFilter resumeFilter = resumeAdminstration.getResumeFilters().get(0);
             model.addAttribute("resumeFilter", resumeFilter);
@@ -480,8 +542,17 @@ public class ResumeController {
         return "skillz/resumes";
     }
 
-
-    @RequestMapping(value = RESUMES, method = GET, params = "selectFilter")
+    /**
+     * Show a list of all resumes and provide input for filter parameters according to the
+     * selected filter. Only admin may do that.
+     * 
+     * @param model
+     * @param pageable
+     * @param selectFilter
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/resumes", method = GET, params = "selectFilter")
     public String resumes(Model model, Pageable pageable, @RequestParam String selectFilter) {
 
         ResumeFilter resumeFilter = resumeAdminstration.getResumeFilter(selectFilter);
@@ -490,8 +561,18 @@ public class ResumeController {
         return resumes(model, pageable);
     }
 
-
-    @RequestMapping(value = RESUMES, method = GET, params = "filterName")
+    /**
+     * Show a list of all resumes filtered by the named filter, which may be configured by
+     * filter specific parameters. Only admin may do that.
+     *
+     * @param model
+     * @param pageable
+     * @param filterName
+     * @param webRequest
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/resumes", method = GET, params = "filterName")
     public String resumes(Model model, Pageable pageable, @RequestParam String filterName, WebRequest webRequest) {
 
         ResumeFilter resumeFilter = resumeAdminstration.getResumeFilter(filterName);
@@ -505,7 +586,33 @@ public class ResumeController {
         return "skillz/resumes";
     }
 
+    /**
+     * Assigns a list of resumes to the given matrix template. Only admin may do that.
+     *
+     * @param resumes
+     * @param template
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/resumes", method = POST, params = "resumes")
+    public String assignResumesToTemplate(@RequestParam("resumes") List<Resume> resumes,
+        @RequestParam("template") MatrixTemplate template) {
 
+        for (Resume resume : resumes) {
+            resumeManagement.save(resume, template);
+        }
+
+        return UrlUtils.redirect("/skillz/resumes");
+    }
+
+    /**
+     * Fetch all parameters from the given {@link WebRequest} and create a key/value map
+     * of them. This is used to fetch all filter specific parameters and provide them to
+     * selected filter.
+     * 
+     * @param webRequest
+     * @return
+     */
     private Map<String, String[]> requestParametersAsMap(WebRequest webRequest) {
 
         Map<String, String[]> parameters = new HashMap<String, String[]>();
@@ -518,34 +625,5 @@ public class ResumeController {
 
         return parameters;
     }
-
-
-    @RequestMapping(value = RESUMES, method = POST, params = "resumes")
-    public String assignResumesToTemplate(@RequestParam("resumes") List<Resume> resumes,
-        @RequestParam("template") MatrixTemplate template) {
-
-        for (Resume resume : resumes) {
-            resumeManagement.save(resume, template);
-        }
-
-        return UrlUtils.redirect(RESUMES);
-    }
-
-
-    // Helper methods
-
-    private String showResume(Resume resume, Model model) {
-
-        if (null == resume) {
-            model.addAttribute(Core.MESSAGE, Message.error("resume.notfound"));
-
-            return null;
-        }
-
-        model.addAttribute("filters", resumeManagement.getResumeAttributeFilters());
-        model.addAttribute("resume", resume);
-        model.addAttribute("levels", skillManagement.getLevels());
-
-        return "skillz/resume";
-    }
+ 
 }

@@ -7,7 +7,6 @@
 <%@ taglib prefix="minos" uri="http://www.synyx.org/minos/tags"%>
 
 <%@ taglib prefix="skillz" tagdir="/WEB-INF/tags/skillz"%>
-<%@ taglib prefix="c" tagdir="/WEB-INF/tags/core"%>
 
 <script type="text/javascript">
     <!--
@@ -31,8 +30,8 @@
 </ul>
 
 <div id="tabs-1" class="tab">
-
-<c:form modelAttribute="resume" action="/web/skillz/resumes">
+<spring:url value="/web/skillz/user/${resume.subject.username}/resume" var="resumeAction" />
+<form:form method="put" modelAttribute="resume" action="${resumeAction}">
 	<table class="form" style="float: left">
 		<tr>
 			<td class="label"><spring:message code="name" />:</td>
@@ -83,22 +82,23 @@
 			</tr>
 		</tfoot>
 	</table>
-</c:form>
+</form:form>
 <div id="photo" style="width: 300px; float: right">
 <core:if test="${not empty resume.photo}">
+        <spring:url value="/web/skillz/user/${resume.subject.username}/resume/photo" var="photoUrl" />
 	<table class="form" style="width: 100%">
 		<tr>
 			<td class="label"><spring:message code="skillz.resume.photo" />:
 			</td>
-			<td><img src="resumes/${resume.id}/photo" width="200px" /></td>
+			<td><img src="${photoUrl}" width="200px" /></td>
 			<td><c:deleteLink href="resumes/${resume.id}/photo"
 				imageUrl="/images/core/delete.png" /></td>
 		</tr>
 	</table>
 </core:if>
-<spring:url value="/web/skillz/resumes/${resume.id}/photo" var="action" />
+<spring:url value="/web/skillz/user/${resume.subject.username}/resume/photo" var="photoAction" />
 <form:form method="put" modelAttribute="resume" name="savePhoto"
-	action="${action}" enctype="multipart/form-data" >
+	action="${photoAction}" enctype="multipart/form-data" >
 	<table class="form" style="width: 100%">
 		<core:if test="${empty resume.photo}">
 			<tr>
@@ -139,18 +139,21 @@
 
 <div id="tabs-4" class="tab">
 
+<%-- resume export --%>
+
 <core:if test="${not empty filters}">
 	<h3><spring:message code="skillz.resume.filters" /></h3>
 </core:if>
-<form:form method="post" action="resume">
+<spring:url var="exportAction" value="/web/skillz/user/${resume.subject.username}/resume" />
+<form:form method="get" action="${exportAction}">
 	<core:forEach items="${filters}" var="filter">
 		<input type="checkbox" name="${filter.messageKey}" value="1" /> <spring:message code="${filter.messageKey}" /><br />
 	</core:forEach>
 	<br />
-	<input type="submit" name="pdfexport" value="<spring:message code="skillz.resume.export.pdf" />" />
-	<input type="submit" name="pdfexportanonymous" value="<spring:message code="skillz.resume.export.pdf.anonym" />" />
+	<input type="submit" name="pdf" value="<spring:message code="skillz.resume.export.pdf" />" />
+	<input type="submit" name="pdfanonymous" value="<spring:message code="skillz.resume.export.pdf.anonym" />" />
         <br />
-	<input type="submit" name="zipexport" value="<spring:message code="skillz.resume.export.zip" />" />
+	<input type="submit" name="zip" value="<spring:message code="skillz.resume.export.zip" />" />
 </form:form>
 
 </div>

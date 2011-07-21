@@ -15,7 +15,7 @@
 		</core:when>
 		<core:otherwise>
 			<spring:message code="skillz.project.private" />
-			<core:set var="action" value="/web/skillz/projects/user/${project.owner.username}" />
+			<core:set var="action" value="/web/skillz/user/${project.owner.username}/projects" />
 		</core:otherwise>
 	</core:choose>
 </h2>

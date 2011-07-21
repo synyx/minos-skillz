@@ -19,6 +19,11 @@
         <constructor-arg ref="userManagement" />
     </bean>
 
+    <bean id="skillsAuthenticationService" class="org.synyx.skills.service.SkillsAuthenticationServiceWrapper">
+        <constructor-arg ref="authenticationService" />
+        <constructor-arg ref="userManagement" />
+    </bean>
+
 	<bean id="docbookTemplateService" class="org.synyx.skills.service.VelocityDocbookTemplateServiceImpl">
 		<constructor-arg>
 			<bean class="org.springframework.ui.velocity.VelocityEngineFactoryBean">

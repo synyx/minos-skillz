@@ -1,1 +1,1 @@
-<% response.sendRedirect("web/skillz/resume"); %>
+<% response.sendRedirect("web/skillz"); %>

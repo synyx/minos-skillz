@@ -1,21 +1,23 @@
 package org.synyx.skills.web;
 
-import org.synyx.skills.web.ResumeController;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.synyx.minos.core.web.WebTestUtils.*;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
+import javax.servlet.http.HttpSession;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.ExtendedModelMap;
@@ -33,6 +35,7 @@ import org.synyx.skills.domain.resume.ResumeAttributeFilter;
 import org.synyx.skills.service.PdfDocbookCreator;
 import org.synyx.skills.service.ResumeManagement;
 import org.synyx.skills.service.SkillManagement;
+import org.synyx.skills.service.SkillsAuthenticationServiceWrapper;
 
 
 /**
@@ -52,29 +55,37 @@ public class ResumeControllerUnitTest {
     private SkillManagement skillManagement;
     @Mock
     private PdfDocbookCreator pdfDocbookCreator;
+    @Mock(answer= Answers.RETURNS_MOCKS)
+    private SkillsAuthenticationServiceWrapper authenticationService;
     @Mock
     private Resume resume;
+
+    private HttpSession mockSession = new MockHttpSession();
 
     private Errors errors;
     private Model model;
 
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
 
-        controller = new ResumeController(resumeManagement, skillManagement, null, pdfDocbookCreator, null, null);
+        controller = new ResumeController(authenticationService, resumeManagement, skillManagement, null, pdfDocbookCreator, null, null);
 
         errors = new BeanPropertyBindingResult(null, "");
         model = new ExtendedModelMap();
+
+        mockSession.getServletContext().setAttribute("javax.servlet.context.tempdir", new File("/tmp/"));
+
+        new File("/tmp/resume.pdf").createNewFile();
     }
 
 
     @Test
-    public void rejectsInvalidResumeId() throws Exception {
+    public void rejectsInvalidResumeUser() throws Exception {
 
-        String view = controller.resume(5L, model);
+        String view = controller.resume(null, model);
 
-        verify(resumeManagement).getResume(5L);
+        verify(resumeManagement).getResume(any(User.class));
         assertNull(view);
         assertTrue(model.asMap().get(Core.MESSAGE) instanceof Message);
     }
@@ -85,7 +96,7 @@ public class ResumeControllerUnitTest {
 
         MultipartFile multipartFile = new MockMultipartFile("foobar.exe", "foobar.exe", "", "".getBytes());
 
-        controller.saveResumePhoto(resume, errors, model, multipartFile);
+        controller.saveResumePhoto("dude", model, multipartFile);
 
         assertErrorMessage(model);
     }
@@ -97,14 +108,14 @@ public class ResumeControllerUnitTest {
 
         ResumeAttributeFilter filter = mock(ResumeAttributeFilter.class);
         WebRequest webRequest = mock(WebRequest.class);
-        File file = mock(File.class);
+        File file = new File("resume.pdf");
         when(filter.getMessageKey()).thenReturn("xyz");
         when(webRequest.getParameter(filter.getMessageKey())).thenReturn("1");
         when(resumeManagement.getResumeAttributeFilters()).thenReturn(Collections.singletonList(filter));
         when(pdfDocbookCreator.createTempPdfFile((File) anyObject(), (Resume) anyObject(), (List<Level>) anyObject()))
                 .thenReturn(file);
 
-        controller.resumePdf(null, null, new MockHttpSession(), webRequest);
+        controller.resumePdf(null, new MockHttpServletResponse(), mockSession, mock(OutputStream.class), webRequest);
 
         ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
         verify(resumeManagement).getFilteredResume((User) anyObject(), argument.capture());

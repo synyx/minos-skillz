@@ -38,8 +38,10 @@ public class SkillzMenuItemProvider extends AbstractMenuItemProvider {
     @Override
     protected List<MenuItem> initMenuItems() {
 
-        MenuItem skillzMenu = MenuItem.create(MENU_SKILLZ).withKeyBase("skillz.menu").withPosition(20).withUrl(
-                "/skillz/resume").withPermission(SKILLZ_USER).build();
+        UrlResolver privateResumeStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/user/%s/resume",
+                    UserPlaceholderAwareUrlResolver.DEFAULT_PLACEHOLDER), authenticationService);
+        MenuItem skillzMenu = MenuItem.create(MENU_SKILLZ).withKeyBase("skillz.menu").withPosition(20)
+                .withUrlResolver(privateResumeStrategy).withPermission(SKILLZ_USER).build();
 
         MenuItem manageResumes = MenuItem.create(MENU_SKILLZ_RESUMES_MANAGE).withKeyBase("skillz.menu.manageResumes")
             .withPosition(10).withUrl("/skillz/resumes").withPermission(SKILLZ_ADMINISTRATION).withParent(skillzMenu)
@@ -49,9 +51,9 @@ public class SkillzMenuItemProvider extends AbstractMenuItemProvider {
             .withUrl("/skillz").withPermission(SKILLZ_ADMINISTRATION).withParent(skillzMenu).build();
 
         MenuItem resume = MenuItem.create(MENU_SKILLZ_RESUME).withKeyBase("skillz.menu.resume").withPosition(40)
-            .withUrl("/skillz/resume").withPermission(SKILLZ_USER).withParent(skillzMenu).build();
+            .withUrlResolver(privateResumeStrategy).withPermission(SKILLZ_USER).withParent(skillzMenu).build();
 
-        UrlResolver privateProjectsStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/projects/user/%s",
+        UrlResolver privateProjectsStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/user/%s/projects",
                     UserPlaceholderAwareUrlResolver.DEFAULT_PLACEHOLDER), authenticationService);
         MenuItem privateProjects = MenuItem.create(MENU_SKILLZ_PRIVATEPROJECTS).withKeyBase(
                 "skillz.menu.projects.private").withPosition(50).withUrlResolver(privateProjectsStrategy)
