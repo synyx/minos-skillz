@@ -87,7 +87,6 @@ public class ResumeControllerUnitTest {
 
         verify(resumeManagement).getResume(any(User.class));
         assertNull(view);
-        assertTrue(model.asMap().get(Core.MESSAGE) instanceof Message);
     }
 
 

@@ -201,6 +201,11 @@ public class ResumeController {
 
         Resume resume = resumeManagement.getResume(user);
 
+        if (null == resume) {
+            LOG.error(String.format("No resume for user with user name: %s", username));
+            return null;
+        }
+
         model.addAttribute("owner", user);
         model.addAttribute("filters", resumeManagement.getResumeAttributeFilters());
         model.addAttribute("resume", resume);
