@@ -18,7 +18,8 @@ import java.util.List;
 public interface ResumeManagement {
 
     /**
-     * Returns the {@link Resume} of the given {@link User}.
+     * Returns the {@link Resume} of the given {@link User}. Creates a new one
+     * for the given {@link User} if none already exists.
      *
      * @return
      */
@@ -113,4 +114,15 @@ public interface ResumeManagement {
      * @return
      */
     Resume getFilteredResume(User user, List<ResumeAttributeFilter> filters);
+
+
+    /**
+     * Switch the {@link MatrixTemplate} to use for the given {@link User}s skill matrix.
+     * If switched to a template different from the current one, the current skill matrix is
+     * discarded!
+     *
+     * @param user
+     * @param template
+     */
+    void switchMatrixTemplate(User user, MatrixTemplate template);
 }

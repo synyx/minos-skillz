@@ -41,7 +41,6 @@ import org.synyx.minos.umt.service.UserManagement;
 import java.util.Locale;
 import javax.annotation.security.RolesAllowed;
 import org.synyx.minos.core.domain.User;
-import org.synyx.minos.core.security.AuthenticationService;
 import org.synyx.minos.core.web.CurrentUser;
 import org.synyx.skills.SkillzPermissions;
 import org.synyx.skills.service.SkillsAuthenticationServiceWrapper;
@@ -61,7 +60,7 @@ public class SkillzController {
     private static final String SKILLZ_TEMPLATES = "/skillz#tabs-2";
     private static final String SKILLZ_LEVELS = "/skillz#tabs-4";
 
-    private AuthenticationService authenticationService;
+    private SkillsAuthenticationServiceWrapper authenticationService;
 
     private SkillManagement skillManagement = null;
     private UserManagement userManagement = null;
@@ -79,7 +78,7 @@ public class SkillzController {
      * Creates a new {@link SkillzController} instance.
      */
     @Autowired
-    public SkillzController(AuthenticationService authenticationService, SkillManagement skillManagement, UserManagement userManagement,
+    public SkillzController(SkillsAuthenticationServiceWrapper authenticationService, SkillManagement skillManagement, UserManagement userManagement,
         ProjectValidator projectValidator, CategoryValidator categoryValidator,
         MatrixTemplateValidator matrixTemplateValidator, LevelValidator levelValidator) {
 

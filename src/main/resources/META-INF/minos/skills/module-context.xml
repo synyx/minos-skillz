@@ -93,6 +93,7 @@
         <constructor-arg ref="resumeDao" />
 	 	<constructor-arg ref="activityDao" />
         <constructor-arg ref="skillzMatrixDao" />
+        <constructor-arg ref="matrixTemplateDao" />
         <constructor-arg ref="converter" />
         <property name="resumeFilters">
         	<plugin:list class="org.synyx.skills.domain.resume.ResumeFilter" />

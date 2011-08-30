@@ -51,7 +51,7 @@ public class Resume extends AbstractAuditable<User, Long> {
     @OneToMany(cascade = ALL, orphanRemoval = true)
     private final List<Activity> references;
 
-    @OneToOne(cascade = { PERSIST, MERGE, REMOVE })
+    @OneToOne(cascade = { PERSIST, MERGE, REMOVE }, orphanRemoval = true)
     private SkillMatrix skillz;
 
     /**
@@ -317,5 +317,16 @@ public class Resume extends AbstractAuditable<User, Long> {
     public SkillMatrix getSkillz() {
 
         return skillz;
+    }
+
+    /**
+     * Set the {@link SkillMatrix} for this resume. Note: The old {@link SkillMatrix} and all it's
+     * entries are deleted on commit!
+     *
+     * @param skillz
+     */
+    public void setSkillz(SkillMatrix skillz) {
+
+        this.skillz = skillz;
     }
 }

@@ -202,7 +202,7 @@ public class ResumeController {
         Resume resume = resumeManagement.getResume(user);
 
         if (null == resume) {
-            LOG.error(String.format("No resume for user with user name: %s", username));
+            LOG.info(String.format("No resume for user with user name: %s", username));
             return null;
         }
 
@@ -630,5 +630,47 @@ public class ResumeController {
 
         return parameters;
     }
- 
+
+    /* Controller methods for changing matrix template of a user. */
+
+    /**
+     * Show list of skill matrix templates for selection to use for the resume of a
+     * certain user.
+     *
+     * @param username
+     * @param model
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/template", method = GET)
+    public String showSwitchTemplate(@PathVariable("username") String username, Model model) {
+
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        model.addAttribute("user", user);
+        model.addAttribute("templates", skillManagement.getTemplates());
+
+        return "skillz/templates";
+    }
+
+    /**
+     * Sets the selected skill matrix template to use for the resume of a certain user. Any prior
+     * skill matrix is deleted!
+     *
+     * @param username
+     * @param template
+     * @param model
+     * @return
+     */
+    @RolesAllowed({SkillzPermissions.SKILLZ_USER, SkillzPermissions.SKILLZ_ADMINISTRATION})
+    @RequestMapping(value = "/skillz/user/{username:[a-zA-Z_]\\w*}/template", method = POST)
+    public String selectSwitchTemplate(@PathVariable("username") String username, @RequestParam("template") MatrixTemplate template, Model model) {
+
+        User user = authenticationService.getUserIfCurrentUserOrAdmin(username);
+
+        resumeManagement.switchMatrixTemplate(user, template);
+
+        return resume(username, model);
+    }
+
 }

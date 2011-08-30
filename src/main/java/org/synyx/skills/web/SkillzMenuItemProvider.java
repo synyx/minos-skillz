@@ -59,6 +59,12 @@ public class SkillzMenuItemProvider extends AbstractMenuItemProvider {
                 "skillz.menu.projects.private").withPosition(50).withUrlResolver(privateProjectsStrategy)
             .withPermission(SKILLZ_USER).withParent(skillzMenu).build();
 
-        return Arrays.asList(skillzMenu, manageResumes, skillz, resume, privateProjects);
+        UrlResolver templateSwitchStrategy = new UserPlaceholderAwareUrlResolver(String.format("/skillz/user/%s/template",
+                    UserPlaceholderAwareUrlResolver.DEFAULT_PLACEHOLDER), authenticationService);
+        MenuItem templateSwitch = MenuItem.create(MENU_SKILLZ_PRIVATEPROJECTS).withKeyBase(
+                "skillz.menu.template.switch").withPosition(50).withUrlResolver(templateSwitchStrategy)
+            .withPermission(SKILLZ_USER).withParent(skillzMenu).build();
+
+        return Arrays.asList(skillzMenu, manageResumes, skillz, resume, privateProjects, templateSwitch);
     }
 }
